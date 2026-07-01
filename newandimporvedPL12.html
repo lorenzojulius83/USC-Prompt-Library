@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USC AI Ignite &#8212; Prompt Library</title>
+<style>
+  :root{
+    --bg:#0a0e17;--card:#121826;--card2:#1a2235;--accent:#00bceb;--accent2:#0d6efd;
+    --gong:#a855f7;--assist:#22c55e;--circuit:#00bceb;--general:#f59e0b;
+    --ae:#38bdf8;--se:#fb7185;--text:#e6edf6;--muted:#8a97ad;--line:#222c40;--star:#ffd33d;
+    --amber:#f5b54a;--fs1:#00bceb;--fs2:#22c55e;--fs3:#a855f7;--fs4:#f59e0b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;}
+  body{background:var(--bg);color:var(--text);line-height:1.5;}
+
+  .topbar{position:relative;}
+  .kebab{position:absolute;top:18px;right:24px;z-index:45;}
+  .kebab-btn{width:42px;height:42px;border-radius:11px;background:var(--card2);border:1px solid var(--line);
+    color:var(--text);font-size:22px;cursor:pointer;display:grid;place-items:center;transition:.15s;}
+  .kebab-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .kebab-pop{position:absolute;top:50px;right:0;background:var(--card2);border:1px solid var(--line);
+    border-radius:12px;box-shadow:0 14px 36px rgba(0,0,0,.6);min-width:200px;overflow:hidden;display:none;}
+  .kebab-pop.open{display:block;}
+  .kebab-pop button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;
+    color:var(--text);padding:13px 16px;font-size:14px;cursor:pointer;text-align:left;transition:.12s;}
+  .kebab-pop button:hover{background:#0d6efd22;}
+
+  header{padding:42px 24px 28px;text-align:center;background:
+    radial-gradient(900px 360px at 50% -120px,rgba(0,188,235,.22),transparent),var(--bg);
+    border-bottom:1px solid var(--line);}
+  .logo{font-size:13px;letter-spacing:4px;color:var(--accent);font-weight:700;}
+  header h1{font-size:40px;margin:8px 0 6px;background:linear-gradient(90deg,#fff,#7fd6f5);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  header p{color:var(--muted);max-width:640px;margin:0 auto;}
+
+  .fsbanner{max-width:1200px;margin:24px auto 0;padding:0 24px;}
+  .fsbanner button{width:100%;border:none;cursor:pointer;border-radius:16px;padding:20px 26px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;color:#04121b;font-weight:800;
+    background:linear-gradient(100deg,#00bceb,#0d6efd 55%,#a855f7);
+    box-shadow:0 10px 34px rgba(13,110,253,.35);transition:.2s;text-align:left;}
+  .fsbanner button:hover{transform:translateY(-3px);box-shadow:0 16px 44px rgba(13,110,253,.5);}
+  .fsbanner .l{display:flex;align-items:center;gap:16px;}
+  .fsbanner .rk{font-size:30px;}
+  .fsbanner .ttl{font-size:22px;line-height:1.15;}
+  .fsbanner .sub{font-weight:600;font-size:13px;opacity:.85;}
+  .fsbanner .go{font-size:15px;display:flex;align-items:center;gap:8px;background:#04121b22;
+    border-radius:999px;padding:9px 16px;white-space:nowrap;}
+
+  .controls{max-width:1200px;margin:26px auto 6px;padding:0 24px;}
+  .search{display:flex;align-items:center;gap:12px;background:var(--card);
+    border:1px solid var(--line);border-radius:14px;padding:14px 18px;}
+  .search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:16px;}
+  .search span{font-size:20px;}
+
+  .filters{display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;}
+  .fgroup{flex:1;min-width:200px;}
+  .fgroup label{display:block;font-size:12px;letter-spacing:1.5px;color:var(--muted);
+    margin-bottom:6px;text-transform:uppercase;font-weight:600;}
+
+  .ms{position:relative;}
+  .ms-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;
+    padding:13px 16px;font-size:15px;cursor:pointer;transition:.2s;text-align:left;overflow:hidden;}
+  .ms-btn:hover{border-color:var(--accent);}
+  .ms-btn .lbl{display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;flex:1;min-width:0;}
+  .ms-btn .lbl .tag{background:#0d6efd22;border:1px solid var(--line);border-radius:7px;
+    padding:2px 8px;font-size:12.5px;flex-shrink:0;}
+  .ms-btn .lbl .ph{color:var(--muted);}
+  .ms-btn .right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .ms-btn .caret{color:var(--accent);font-size:14px;}
+  .ms-btn .cnt{background:var(--accent);color:#04121b;font-size:11px;font-weight:800;
+    border-radius:999px;padding:2px 8px;}
+  .ms-panel{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;background:var(--card2);
+    border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.6);
+    padding:10px;display:none;max-height:320px;overflow:auto;}
+  .ms-panel.open{display:block;}
+  .ms-opt{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;transition:.12s;}
+  .ms-opt:hover{background:#0d6efd22;}
+  .ms-opt input{width:17px;height:17px;accent-color:var(--accent);cursor:pointer;}
+  .ms-opt.fsweek{padding-left:30px;font-size:13.5px;border-left:2px solid var(--accent);margin-left:6px;}
+  .ms-opt.fsweek span{color:#bfe9f7;}
+  .ms-add{display:flex;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line);}
+  .ms-add input{flex:1;background:var(--bg);color:var(--text);border:1px solid var(--line);
+    border-radius:9px;padding:8px 11px;font-size:13.5px;outline:none;}
+  .ms-add input:focus{border-color:var(--accent);}
+  .ms-add button{background:var(--accent2);color:#fff;border:none;border-radius:9px;
+    padding:0 14px;font-size:18px;font-weight:700;cursor:pointer;}
+  .ms-add button:hover{filter:brightness(1.1);}
+  .ms-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    margin-top:8px;padding-top:10px;border-top:1px solid var(--line);}
+  .ms-clear{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:6px;}
+  .ms-clear:hover{color:var(--text);}
+  .ms-done{background:var(--accent);color:#04121b;border:none;border-radius:9px;
+    padding:8px 18px;font-weight:800;font-size:13px;cursor:pointer;}
+  .ms-done:hover{filter:brightness(1.1);}
+
+  .legend{max-width:1200px;margin:24px auto;padding:0 24px;display:flex;
+    flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;}
+  .legend .hint{color:var(--muted);font-size:13px;display:flex;align-items:center;gap:8px;}
+  .arrow{font-size:20px;color:var(--accent);animation:bob 1.4s infinite;}
+  @keyframes bob{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;
+    font-size:13px;font-weight:700;background:var(--card2);border:1px solid var(--line);cursor:pointer;transition:.15s;}
+  .pill:hover{transform:translateY(-2px);}
+  .pill.active{border-color:var(--star);color:var(--star);}
+  .dot{width:12px;height:12px;border-radius:50%;}
+  .dot.gong{background:var(--gong)}.dot.assist{background:var(--assist)}
+  .dot.circuit{background:var(--circuit)}.dot.general{background:var(--general)}
+  .dot.star{background:var(--star)}
+
+  .count{max-width:1200px;margin:0 auto 6px;padding:0 24px;color:var(--muted);font-size:14px;}
+  .count b{color:var(--accent);}
+
+  .grid{max-width:1200px;margin:14px auto 110px;padding:0 24px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px;}
+  .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+    border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;
+    transition:.2s;position:relative;}
+  .card::before{content:"";position:absolute;top:0;left:8px;right:8px;height:4px;
+    border-radius:4px 4px 0 0;background:var(--barbg,var(--accent));}
+  .card:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 14px 40px rgba(0,0,0,.5);}
+
+  .ctop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .badges{display:flex;flex-wrap:wrap;gap:6px;}
+  .toolbadge{display:flex;align-items:center;gap:7px;font-weight:800;font-size:12.5px;padding:5px 11px;
+    border-radius:999px;background:#0009;}
+  .toolbadge.gong{color:var(--gong)}.toolbadge.assist{color:var(--assist)}
+  .toolbadge.circuit{color:var(--circuit)}.toolbadge.general{color:var(--general)}
+  .glyph{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;
+    font-size:12px;font-weight:900;color:#0a0e17;}
+  .glyph.gong{background:var(--gong)}.glyph.assist{background:var(--assist)}
+  .glyph.circuit{background:var(--circuit)}.glyph.general{background:var(--general)}
+
+  .ctopright{display:flex;align-items:center;gap:8px;}
+  .star-btn{background:none;border:none;font-size:24px;cursor:pointer;line-height:1;
+    color:#445;transition:.15s;}
+  .star-btn:hover{transform:scale(1.2);}
+  .star-btn.on{color:var(--star);text-shadow:0 0 12px rgba(255,211,61,.6);}
+
+  .roles{display:flex;gap:6px;flex-wrap:wrap;}
+  .role{font-size:11px;font-weight:800;padding:4px 9px;border-radius:8px;letter-spacing:.5px;}
+  .role.AE{background:rgba(56,189,248,.15);color:var(--ae);border:1px solid var(--ae)}
+  .role.SE{background:rgba(251,113,133,.15);color:var(--se);border:1px solid var(--se)}
+  /* ===== TWEAK: generic class for new roles (color applied inline per-role) ===== */
+  .role.role-x{border:1px solid currentColor;}
+
+  .card h3{font-size:17px;line-height:1.3;}
+  .cats{display:flex;flex-wrap:wrap;gap:6px;}
+  .cattag{font-size:10.5px;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;font-weight:700;
+    background:#0009;border:1px solid var(--line);border-radius:999px;padding:3px 9px;}
+  .cattag.fs{color:#04121b;background:linear-gradient(90deg,#00bceb,#a855f7);border:none;}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--muted);}
+  .chip{background:#0009;border:1px solid var(--line);border-radius:999px;padding:3px 10px;}
+
+  /* ===== description block ===== */
+  .promptwrap{position:relative;flex:1;}
+  .desc-label{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);
+    font-weight:800;margin-bottom:6px;display:block;}
+  .prompt-desc{background:#0009;border:1px dashed var(--line);border-radius:12px;padding:13px 40px 13px 13px;
+    font-size:14px;color:#cdd8e8;line-height:1.55;height:100%;}
+  .menu-btn{position:absolute;bottom:8px;right:8px;width:30px;height:30px;border-radius:8px;
+    background:#1d2840;border:1px solid var(--line);color:var(--muted);cursor:pointer;
+    font-size:18px;line-height:1;display:grid;place-items:center;transition:.15s;letter-spacing:1px;}
+  .menu-btn:hover{color:var(--accent);border-color:var(--accent);}
+  .menu-pop{position:absolute;bottom:44px;right:8px;background:var(--card2);border:1px solid var(--line);
+    border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.6);overflow:hidden;display:none;z-index:20;min-width:140px;}
+  .menu-pop.open{display:block;}
+  .menu-pop button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;
+    color:var(--text);padding:11px 14px;font-size:14px;cursor:pointer;text-align:left;transition:.12s;}
+  .menu-pop button:hover{background:#0d6efd22;}
+  .menu-pop button.del{color:#ff7b7b;}
+  .menu-pop button.del:hover{background:#ff7b7b22;}
+
+  /* ===== single full-width "View Prompt" bubble ===== */
+  .cardfoot{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .seewhole{flex:1;width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--accent);color:#04121b;border:none;border-radius:10px;
+    padding:12px 16px;font-weight:800;font-size:14px;cursor:pointer;transition:.15s;text-decoration:none;}
+  .seewhole:hover{filter:brightness(1.1);transform:scale(1.02);text-decoration:none;}
+
+  .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:60px 0;font-size:18px;}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;border-top:1px solid var(--line);}
+
+  #fsView{display:none;}
+  .fs-top{max-width:1200px;margin:26px auto 0;padding:0 24px;display:flex;align-items:center;
+    justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .fs-back{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:11px;
+    padding:11px 18px;font-weight:700;cursor:pointer;font-size:14px;transition:.15s;}
+  .fs-back:hover{border-color:var(--accent);color:var(--accent);}
+  .fs-hero{max-width:1200px;margin:18px auto 0;padding:0 24px;}
+  .fs-hero h2{font-size:32px;background:linear-gradient(90deg,#fff,#9fe2f5);-webkit-background-clip:text;
+    background-clip:text;color:transparent;}
+  .fs-hero p{color:var(--muted);margin-top:4px;}
+  .fs-jumpbar{max-width:1200px;margin:22px auto 0;padding:0 24px;display:flex;flex-wrap:wrap;gap:12px;}
+  .fs-jump{flex:1;min-width:140px;border:none;cursor:pointer;border-radius:12px;padding:14px 16px;
+    font-weight:800;font-size:14px;color:#04121b;text-align:left;transition:.18s;line-height:1.2;}
+  .fs-jump:hover{transform:translateY(-3px);filter:brightness(1.08);box-shadow:0 8px 22px rgba(0,0,0,.4);}
+  .fs-jump .wk{font-size:11px;letter-spacing:1px;opacity:.8;display:block;}
+  .fs-jump.w1{background:var(--fs1)}.fs-jump.w2{background:var(--fs2)}
+  .fs-jump.w3{background:var(--fs3)}.fs-jump.w4{background:var(--fs4)}
+  .fs-week{max-width:1200px;margin:30px auto 0;padding:0 24px;}
+  .fs-weekhead{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .fs-wbadge{font-weight:900;color:#04121b;border-radius:12px;padding:8px 14px;font-size:14px;letter-spacing:.5px;}
+  .fs-wbadge.w1{background:var(--fs1)}.fs-wbadge.w2{background:var(--fs2)}
+  .fs-wbadge.w3{background:var(--fs3)}.fs-wbadge.w4{background:var(--fs4)}
+  .fs-weekhead h3{font-size:22px;}
+  .fs-weekhead .ct{color:var(--muted);font-size:13px;margin-left:auto;}
+  .fs-weekgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px;}
+  .fs-weekempty{color:var(--muted);font-size:14px;padding:18px;border:1px dashed var(--line);border-radius:12px;}
+
+  .fab{position:fixed;bottom:28px;right:28px;width:64px;height:64px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#04121b;
+    font-size:36px;font-weight:300;cursor:pointer;box-shadow:0 10px 30px rgba(0,188,235,.5);
+    display:flex;align-items:center;justify-content:center;line-height:1;padding:0;transition:.2s;z-index:40;}
+  .fab span{display:block;line-height:1;transform:translateY(-1px);}
+  .fab:hover{transform:scale(1.1) rotate(90deg);}
+  .fabhint{position:fixed;bottom:42px;right:104px;background:var(--card2);color:var(--text);
+    padding:8px 14px;border-radius:10px;font-size:13px;border:1px solid var(--line);z-index:40;
+    animation:bob2 1.6s infinite;}
+  .fabhint::after{content:"";position:absolute;right:-7px;top:50%;transform:translateY(-50%);
+    border:7px solid transparent;border-left-color:var(--card2);}
+  @keyframes bob2{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+
+  /* ===== Back to Top button (sits above the + FAB) ===== */
+  .totop{position:fixed;right:28px;bottom:104px;width:64px;height:64px;border-radius:50%;
+    background:var(--card2);border:1px solid var(--line);color:var(--accent);
+    font-size:30px;line-height:1;cursor:pointer;z-index:40;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+    opacity:0;visibility:hidden;transform:translateY(12px);
+    transition:opacity .25s ease,transform .25s ease,visibility .25s ease,border-color .15s,color .15s;}
+  .totop.show{opacity:1;visibility:visible;transform:translateY(0);}
+  .totop:hover{border-color:var(--accent);color:#fff;background:#1d2840;transform:translateY(-3px);}
+
+  .overlay{position:fixed;inset:0;background:rgba(3,6,12,.78);backdrop-filter:blur(4px);
+    display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow:auto;}
+  .overlay.open{display:flex;}
+  .modal{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+    border-radius:20px;width:100%;max-width:560px;padding:28px;}
+  .modal h2{font-size:24px;margin-bottom:4px;}
+  .modal .sub{color:var(--muted);font-size:14px;margin-bottom:20px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;letter-spacing:1px;color:var(--muted);
+    text-transform:uppercase;font-weight:700;margin-bottom:6px;}
+  .field input,.field textarea,.field select{width:100%;background:var(--bg);color:var(--text);
+    border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;outline:none;}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);}
+  .field textarea{min-height:110px;resize:vertical;font-family:'Consolas',monospace;font-size:14px;}
+  .field textarea.desc-area{font-family:'Segoe UI',system-ui,sans-serif;min-height:70px;font-size:14px;}
+  .field .opt{text-transform:none;letter-spacing:0;color:#6b7689;font-weight:400;font-size:11.5px;}
+  .row{display:flex;gap:14px;}.row .field{flex:1;}
+  .actions{display:flex;gap:12px;margin-top:8px;}
+  .btn{flex:1;border:none;border-radius:12px;padding:14px;font-weight:800;font-size:15px;cursor:pointer;transition:.15s;}
+  .btn.save{background:var(--accent);color:#04121b;}.btn.save:hover{filter:brightness(1.1);}
+  .btn.cancel{background:transparent;color:var(--muted);border:1px solid var(--line);}
+  .btn.cancel:hover{color:var(--text);}
+  .err{color:#ff6b6b;font-size:13px;margin-top:-8px;margin-bottom:8px;display:none;}
+  .hidden{display:none;}
+  .fsweekfield{border:1px solid var(--accent);background:rgba(0,188,235,.06);border-radius:12px;padding:12px 14px;margin-bottom:16px;}
+  .fsweekfield label{color:var(--accent);}
+
+  .pp-modal{max-width:680px;position:relative;}
+  .pp-modal h2{font-size:22px;margin-bottom:12px;padding-right:40px;}
+  .pp-body{background:#0009;border:1px dashed var(--line);border-radius:12px;padding:18px;
+    font-size:14px;color:#cdd8e8;font-family:'Consolas',monospace;white-space:pre-wrap;
+    max-height:60vh;overflow-y:auto;line-height:1.6;}
+  .pp-copy{margin-top:16px;display:inline-flex;align-items:center;gap:8px;background:var(--accent);
+    color:#04121b;border:none;border-radius:10px;padding:10px 16px;font-weight:800;font-size:13px;cursor:pointer;}
+  .pp-copy:hover{filter:brightness(1.1);}
+  .pp-copy.done{background:var(--assist);}
+
+  .mx-modal{max-width:920px;position:relative;}
+  .mx-close{position:absolute;top:22px;right:22px;width:44px;height:44px;border-radius:50%;
+    background:#000a;border:1px solid var(--line);color:var(--text);font-size:20px;cursor:pointer;
+    display:grid;place-items:center;transition:.15s;}
+  .mx-close:hover{background:#000;color:#fff;border-color:var(--accent);}
+  .mx-head{display:flex;align-items:center;gap:14px;}
+  .mx-head .ico{font-size:30px;}.mx-head h2{font-size:30px;}
+  .mx-sub{color:var(--muted);font-size:16px;margin:6px 0 22px;}
+  .mx-banner{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--amber);
+    background:rgba(245,181,74,.08);color:var(--amber);border-radius:14px;padding:18px 20px;
+    font-size:15.5px;line-height:1.5;margin-bottom:24px;}
+  .mx-banner code{background:rgba(245,181,74,.16);border-radius:6px;padding:1px 7px;font-size:14px;}
+  .mx-banner.live{border-color:var(--assist);background:rgba(34,197,94,.08);color:var(--assist);}
+  .mx-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:26px;}
+  .mx-stat{background:#0a0f1a;border:1px solid var(--line);border-radius:16px;padding:22px 24px;}
+  .mx-stat .lab{font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:700;}
+  .mx-stat .big{font-size:46px;font-weight:800;color:var(--accent);margin-top:12px;line-height:1;}
+  .mx-vtitle{font-size:14px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:10px;}
+  .mx-lead{display:flex;align-items:center;gap:14px;padding:12px 16px;background:#0a0f1a;
+    border:1px solid var(--line);border-radius:12px;margin-bottom:9px;}
+  .mx-rank{width:28px;height:28px;border-radius:8px;background:#0d6efd22;color:var(--accent);
+    font-weight:800;font-size:14px;display:grid;place-items:center;flex-shrink:0;}
+  .mx-lead .t{flex:1;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mx-lead .c{font-weight:800;color:var(--accent);font-size:15px;flex-shrink:0;}
+  .mx-table{width:100%;border-collapse:collapse;margin-bottom:8px;}
+  .mx-table th{text-align:left;font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase;
+    color:var(--muted);font-weight:700;padding:13px 8px;border-bottom:1px solid var(--line);}
+  .mx-table td{padding:13px 8px;font-size:15px;border-bottom:1px solid #161e2e;}
+  .mx-table td.email{color:var(--muted);}
+  .mx-table td.num{color:var(--accent);font-weight:800;text-align:right;}
+  .mx-table td.rankcell{width:42px;}
+  .mx-emptyrow{text-align:center;color:var(--muted);padding:28px 0;font-size:15px;}
+  .mx-rank-sm{width:26px;height:26px;border-radius:7px;background:#0d6efd22;color:var(--accent);
+    font-weight:800;font-size:13px;display:grid;place-items:center;}
+  .mx-note{font-size:12px;color:#6b7689;margin-top:20px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
+  @media(max-width:640px){.row{flex-direction:column;gap:0;}.mx-stats{grid-template-columns:1fr;}.mx-head h2{font-size:24px;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="kebab">
+    <button class="kebab-btn" id="kebabBtn" title="More">&#8942;</button>
+    <div class="kebab-pop" id="kebabPop">
+      <button id="viewMetrics">&#128202; View Metrics</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">CISCO &#8226; USC AI IGNITE</div>
+  <h1>Prompt Library</h1>
+  <p>Browse battle-tested prompts socialized across the USC AI Ignite newsletter. Filter, favorite, copy &#8212; or add your own.</p>
+</header>
+
+<div id="mainView">
+  <div class="fsbanner">
+    <button id="fsOpen">
+      <span class="l"><span class="rk">&#128640;</span>
+        <span><span class="ttl">Fast Start Featured Prompts</span><br>
+        <span class="sub">Your Weeks 1&#8211;4 launchpad &#8212; AI FY27 Strategist, Be Effective in Role, AI UAP Coach, Pipeline Cleanup</span></span></span>
+      <span class="go">Enter Fast Start &#8594;</span>
+    </button>
+  </div>
+
+  <div class="controls">
+    <div class="search">
+      <span>&#128269;</span>
+      <input id="search" type="text" placeholder="Search prompts by keyword (e.g. renewal, competitor, discovery)...">
+    </div>
+    <div class="filters">
+      <div class="fgroup"><label>Category(ies)</label><div class="ms" id="msCat"></div></div>
+      <div class="fgroup"><label>Tool(s)</label><div class="ms" id="msTool"></div></div>
+      <div class="fgroup"><label>Role(s)</label><div class="ms" id="msRole"></div></div>
+      <div class="fgroup"><label>Fiscal Quarter</label><div class="ms" id="msQ"></div></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="hint">Quick filter <span class="arrow">&#8594;</span></span>
+    <span class="pill" data-tool="assist"><span class="dot assist"></span>AI Assistant for Sales</span>
+    <span class="pill" data-tool="gong"><span class="dot gong"></span>Gong</span>
+    <span class="pill" data-tool="circuit"><span class="dot circuit"></span>CircuIT</span>
+    <span class="pill" data-tool="general"><span class="dot general"></span>General</span>
+    <span class="pill" id="favPill"><span class="dot star"></span>&#9733; Favorites only</span>
+    <span class="pill" id="resetPill">Reset all</span>
+  </div>
+
+  <div class="count">Showing <b id="num">0</b> prompts</div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div id="fsView">
+  <div class="fs-top">
+    <button class="fs-back" id="fsBack">&#8592; Back to Full Library</button>
+  </div>
+  <div class="fs-hero">
+    <h2>&#128640; Fast Start Featured Prompts</h2>
+    <p>The first four weeks of Fast Start, organized by focus. Every prompt here also lives in the full library.</p>
+  </div>
+  <div class="fs-jumpbar" id="fsJumpBar"></div>
+  <div id="fsWeeks"></div>
+</div>
+
+<footer>USC AI Ignite &#8226; Prompt Library &#8212; favorites &amp; added prompts are saved in your browser</footer>
+
+<div class="fabhint" id="fabhint">Add a prompt</div>
+<button class="totop" id="toTop" title="Back to top" aria-label="Back to top">&#8593;</button>
+<button class="fab" id="fab" title="Add a new prompt"><span>+</span></button>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitle">&#10133; Add a New Prompt</h2>
+    <div class="sub" id="modalSub">It will instantly appear in the library and work with every filter.</div>
+    <div class="field"><label>Prompt Title</label>
+      <input id="mTitle" type="text" placeholder="e.g. Quarterly Pipeline Health Check"></div>
+    <div class="row">
+      <div class="field"><label>Category(ies)</label><div class="ms" id="msCatForm"></div></div>
+      <div class="field"><label>Tool(s)</label><div class="ms" id="msToolForm"></div></div>
+    </div>
+    <div class="fsweekfield hidden" id="fsWeekField">
+      <label>&#128640; Fast Start Week</label>
+      <select id="mFsWeek">
+        <option value="">Select a week&#8230;</option>
+        <option value="1">Week 1 &#8212; AI FY27 Strategist</option>
+        <option value="2">Week 2 &#8212; Be Effective in Role</option>
+        <option value="3">Week 3 &#8212; AI UAP Coach</option>
+        <option value="4">Week 4 &#8212; Pipeline Cleanup</option>
+      </select>
+    </div>
+    <div class="field"><label>Role(s)</label><div class="ms" id="msRoleForm"></div></div>
+    <div class="row">
+      <div class="field"><label>Fiscal Quarter</label>
+        <input id="mQ" type="text" placeholder="e.g. Q1 FY27" value="Q1 FY27"></div>
+      <div class="field"><label>Newsletter Date</label>
+        <input id="mDate" type="date"></div>
+    </div>
+    <div class="field"><label>Description <span class="opt">(optional &#8212; auto-generated if left blank)</span></label>
+      <textarea id="mDesc" class="desc-area" placeholder="Short summary of what this prompt does for the user. Leave blank to auto-generate."></textarea></div>
+    <div class="field"><label>The Prompt</label>
+      <textarea id="mText" placeholder="Paste the full prompt text here. Use [Customer Name] style placeholders."></textarea></div>
+    <div class="err" id="mErr">Please add a title, the prompt text, at least one role, one category, and one tool. If you chose Fast Start, also pick a week.</div>
+    <div class="actions">
+      <button class="btn cancel" id="cancelBtn">Cancel</button>
+      <button class="btn save" id="saveBtn">Save Prompt</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ppOverlay">
+  <div class="modal pp-modal">
+    <button class="mx-close" id="ppClose">&#10005;</button>
+    <h2 id="ppTitle">Prompt</h2>
+    <div class="pp-body" id="ppBody"></div>
+    <button class="pp-copy" id="ppCopy">&#128203; Copy Prompt</button>
+  </div>
+</div>
+
+<div class="overlay" id="mxOverlay">
+  <div class="modal mx-modal">
+    <button class="mx-close" id="mxClose">&#10005;</button>
+    <div class="mx-head"><span class="ico">&#128202;</span><h2>Prompt Library Metrics</h2></div>
+    <div class="mx-sub">Engagement overview for admins.</div>
+
+    <div class="mx-banner" id="mxBanner">
+      <span>&#9888;&#65039;</span>
+      <span id="mxBannerText">Sample data &#8212; copy totals shown are from this device only, and viewer
+        identity sections are empty until connected. Wire <code>fetchMetrics()</code> to your approved
+        Cisco analytics endpoint for company-wide data.</span>
+    </div>
+
+    <div class="mx-stats">
+      <div class="mx-stat"><div class="lab">Copied Prompts / Visit</div><div class="big" id="mxPerVisit">0</div></div>
+      <div class="mx-stat"><div class="lab">Active Prompts</div><div class="big" id="mxActive">0</div></div>
+      <div class="mx-stat"><div class="lab">Prompts Copied (All Time)</div><div class="big" id="mxAllTime">0</div></div>
+    </div>
+
+    <div class="mx-vtitle">Most Copied Prompts</div>
+    <div id="mxLeaderboard"></div>
+
+    <div class="mx-vtitle" style="margin-top:24px;">Top 5 Viewers</div>
+    <table class="mx-table">
+      <thead><tr><th class="rankcell"></th><th>Full Name</th><th>Cisco Email</th><th style="text-align:right;">Prompts Copied</th></tr></thead>
+      <tbody id="mxTopViewers">
+        <tr><td colspan="4" class="mx-emptyrow">No viewer data available from the source yet.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="mx-vtitle" style="margin-top:24px;">Viewers</div>
+    <table class="mx-table">
+      <thead><tr><th>Full Name</th><th>Cisco Email</th><th>Time Spent in Library</th></tr></thead>
+      <tbody id="mxViewerBody">
+        <tr><td colspan="3" class="mx-emptyrow">No viewer data available from the source yet.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="mx-note">
+      <b>For the backend team &#8212; required before company-wide rollout:</b><br>
+      &#8226; <b>Auth/SSO:</b> gate <code>fetchMetrics()</code>'s endpoint to verified admins <i>server-side</i> &#8212; hiding this menu is NOT the security boundary.<br>
+      &#8226; <b>Consent &amp; governance:</b> the Viewers and Top 5 Viewers sections show named individuals and their behavior &#8212; this requires Cisco privacy/legal sign-off (AI Governance Intake) and a notice to viewers that activity is tracked.<br>
+      &#8226; <b>The page never self-identifies viewers:</b> names, emails, time-in-library, and per-person copy counts come only from the approved SSO-authenticated backend. <code>fetchMetrics()</code> returns <code>{connected:false}</code> today, so identity sections stay empty.
+    </div>
+  </div>
+</div>
+<script>
+/* ===== ONE-TIME DATA SEED (v3 — UAP prompts added) ===== */
+(function(){
+  if(localStorage.getItem('uscSeeded_v3')) return;
+  const seedData = {
+    "uscCustomPrompts": [{"id":"uap-seller","tools":["assist","circuit"],"cats":["Fast Start: Account Planning"],"roles":["AE","SE"],"q":"Q1 FY27","date":"2026-08-10","title":"UAP Coach (Seller)","description":"Built for Account Executives and Solutions Engineers working in account planning. This prompt uses AI Assistant for Sales and CircuIT to help you turn scattered account information into a structured, prioritized plan of action. Drop in your account or deal details and it returns a structured, ready-to-use output you can act on right away, so you spend less time staring at a blank page and more time moving the work forward.","text":"# ROLE\nYou are **your UAP Coach** — a senior Unified Account Planning (UAP) expert who reviews a seller's own Internal Account Review deck/doc and delivers sharp, highly consumable, self-improvement coaching. You evaluate against an embedded 1–5 maturity rubric grounded in Cisco's official UAP program and best practices, and you always close with immediate next best actions the seller can take.\n\nYour audience is **the seller** — the person who built the plan. Speak directly to them (\"you,\" \"your plan\"). Be supportive but candid. You are their coach, not their critic.\n\n# INPUT CONTRACT (STRICT)\n\nWhen the conversation starts (or when no file is attached), respond ONLY with:\n\n> 👋 **Hi, I'm your UAP Coach.** To get started, please share:\n> 1. 📎 Your **Internal Account Review** (PPT or PDF)\n> 2. 🏢 The **customer name**\n\n- Do NOT proceed with scoring until BOTH the file AND the customer name are provided.\n- If only one is provided, ask for the missing item before continuing.\n- Do not accept pasted text in place of the file.\n- Once both are received, extract all relevant text, tables, and structural cues (objectives, initiatives, stakeholder maps, roadmaps, financials, competitive slides, success plans, etc.) and use them as the sole basis for evaluation.\n\n# EMBEDDED UAP PROGRAM KNOWLEDGE (use this as the source of truth)\n\nUAP is Cisco's unified, AI-powered, Salesforce-embedded account planning model integrating the LAER \"Plan for Value\" phases:\n\n- **Value Discovery** — Empathize with the customer; understand their business, priorities, objectives, KPIs (not just technical needs). Artifacts: Company Overview, Customer Objectives, Customer Relationship Map, Customer Heat Map.\n- **Value Definition** — Align Cisco solutions (Product, Services, Expertise) to customer challenges. Artifacts: Technical Journey, Unified Action Plan, Key Pursuits.\n- **Value Realization** — Identify success and action plans to drive adoption and outcomes. Artifacts: Customer Success Plans, Delivery Plans, Customer Business Reviews.\n\n**Core philosophy shifts UAP demands:**\n- Product-focused → value-based customer engagement\n- Siloed teams → integrated \"One Cisco\" team collaboration (AEs, SEs, CX, Renewals, Services, Software, Partners)\n- Unclear tracking → measurable customer outcomes\n- Manual planning → AI-powered efficiency\n\n**Success metrics:** long-term pipeline growth (>12 mo), multi-architecture attach rate, early services engagement, customer sentiment (NPS/satisfaction).\n\n# ⭐ OBJECTIVES — BEST PRACTICE (PRIORITY FOCUS)\n\nThis is the most important part of a strong Discovery and the foundation for everything else. Hold the plan to a high bar.\n\n**\"What good looks like\" — objectives should pass these three tests:**\n1. **Validated, not assumed** — The 4–6 customer objectives have been confirmed by the customer sponsor, not inferred from internal discussion.\n2. **Written in the customer's voice** — Objectives describe the customer's desired business outcome, not Cisco's sales goal.\n3. **Measurable** — Each objective is tied to a metric, KPI, or target.\n\n**Vendor-Speak → Customer-Outcome rewrite rule:**\nIf an objective reads like a Cisco sales goal, it FAILS. Rewrite it as the customer's business outcome. Examples:\n- ❌ \"Obtain SD-WAN business\" → ✅ \"Lower TCO and improve budget predictability\"\n- ❌ \"Win calling RFP\" → ✅ \"Improve employee productivity through omnichannel capabilities\"\n- ❌ \"Modernize edge compute\" → ✅ \"Reduce latency for critical edge apps to under 100 ms to improve customer satisfaction and conversion\"\n\n# 🛠️ INITIATIVES — BEST PRACTICE\n\nInitiatives are how the plan turns objectives into action. Every initiative must earn its place.\n\n**\"What good looks like\" — each initiative should pass these four tests:**\n1. **Mapped to an objective** — Every initiative links to a specific, validated customer objective. Orphan initiatives (not tied to any objective) FAIL.\n2. **Clear owner** — A named owner/role is accountable (per the Responsibility Matrix). \"TBD\" or no owner FAILS.\n3. **Measurable success criteria** — There is a defined milestone, KPI, or target that signals success.\n4. **Outcome-framed, not product-framed** — The initiative connects to the customer's business outcome, not just a Cisco product/sale.\n\nWhen you evaluate initiatives, you MUST:\n- Flag any **orphan initiative** (not mapped to an objective) and recommend the objective it should map to — or whether it should be cut.\n- Flag missing owners and missing success criteria.\n- Score every initiative against the four tests in the Initiatives Scorecard (see Output Format).\n\n# SCORING MODEL — 1–5 MATURITY RUBRIC (EMBEDDED)\n\nScore 1 = Ad hoc, missing, or generic. 5 = Transformational: deep, co-created, outcome-based, multi-threaded, with measurable mutual accountability.\n\n## Dimensions (score each 1–5 — just the number, no level names)\n\n1. **🧠 Account Insights**\n   - Depth of industry/company knowledge, financial health, market dynamics, external forces. Evidence of AI Summary / outside-in perspective. Current, customer-specific, tied to implications for Cisco.\n\n2. **👥 Key Stakeholder Mapping**\n   - Breadth/depth of contacts, power map, economic buyer identified, champions/detractors, whitespace, relationship strategy, \"One Cisco\" team activation.\n\n3. **💡 Business Objectives & Strategic Initiatives** *(weighted highest — apply both Best Practice sections above)*\n   - 4–6 measurable customer objectives, **validated** and **written in the customer's voice**; initiatives **mapped to objectives** with **clear owners**, **success criteria**, and **outcome framing**.\n\n4. **✅ Value Proposition**\n   - \"Why Cisco, why now.\" Every initiative tied to a validated customer objective with quantified value. Shared Vision a CXO would buy. Cross-architecture + services integrated.\n\n5. **⚔️ Competitive Landscape & Differentiation**\n   - Named competitors/incumbents, displacement strategy, win/loss patterns, proof points, competitive threats.\n\n6. **🗺️ Execution Roadmap & Growth Strategy**\n   - Time-bound milestones with owners; Success Plans aligned to objectives; KPIs tracked; adoption barriers + mitigation; ROI demonstrable; expansion/whitespace plays; renewal risk surfaced early; mutual customer commitment.\n\n## Overall Score\n- Use a **weighted judgment** (not strict average). Weight **Business Objectives & Strategic Initiatives** most heavily, followed by **Account Insights**, **Value Proposition**, and **Execution Roadmap & Growth Strategy**. Round to the nearest 0.5.\n\n# OUTPUT FORMAT (STRICT)\n\nRespond in **text only**, using markdown, emojis, bold headings, and short scannable bullets. Scores MUST appear in markdown tables. **No level names — just the 1–5 score.**\n\nSpeak directly to the seller (\"your plan,\" \"you've done,\" \"try this next\"). Use this exact structure and order:\n\n---\n\n## 🎯 Executive Summary — [Customer Name]\n*(2–3 crisp sentences: overall maturity verdict + your single biggest strength + your single biggest opportunity.)*\n\n---\n\n## 📊 Your UAP Quality Score\n\n**Overall Maturity:** ⭐ **[X.X / 5]**\n\n| Dimension | Score |\n|---|---|\n| 🧠 Account Insights | X/5 |\n| 👥 Key Stakeholder Mapping | X/5 |\n| 💡 Business Objectives & Strategic Initiatives | X/5 |\n| ✅ Value Proposition | X/5 |\n| ⚔️ Competitive Landscape & Differentiation | X/5 |\n| 🗺️ Execution Roadmap & Growth Strategy | X/5 |\n\n---\n\n## 🔎 At-a-Glance: Objectives & Initiatives Health\n*(Always include — instant top-level read. Compute counts from your scorecards below.)*\n\n- 🎯 **Objectives:** [X] found • [X] validated • [X] in customer's voice • [X] measurable\n- 🛠️ **Initiatives:** [X] found • [X] mapped to an objective • **[X] orphan(s)** • [X] missing owner\n\n*(Use ✅ when all pass, ⚠️ when partial, 🚩 to highlight any orphan initiatives or unvalidated objectives.)*\n\n---\n\n## ⭐ Spotlight: Objectives in the Customer's Voice\n*(Always include — priority focus.)*\n\n**Objectives Scorecard** *(one row per objective found in your plan):*\n\n| Objective (as written) | 🎯 Validated | 🗣️ Customer's Voice | 📏 Measurable |\n|---|---|---|---|\n| \"[objective 1]\" | ✅ / ⚠️ / ❌ | ✅ / ⚠️ / ❌ | ✅ / ⚠️ / ❌ |\n| \"[objective 2]\" | ✅ / ⚠️ / ❌ | ✅ / ⚠️ / ❌ | ✅ / ⚠️ / ❌ |\n\n*(Legend: ✅ Pass • ⚠️ Partial • ❌ Fail. If no objectives are found, say so plainly and score Dimension 3 a 1.)*\n\n**Suggested rewrites** *(only for objectives that fail the customer's-voice test):*\n- ❌ \"[original]\" → ✅ \"[rewrite in customer's voice with a metric]\"\n\n---\n\n## 🛠️ Spotlight: Initiatives That Drive Outcomes\n*(Always include — priority focus.)*\n\n**Initiatives Scorecard** *(one row per initiative found in your plan):*\n\n| Initiative (as written) | 🔗 Mapped to Objective | 👤 Clear Owner | 📏 Success Criteria | 🎯 Outcome-Framed |\n|---|---|---|---|---|\n| \"[initiative 1]\" | ✅ → \"[objective]\" / ❌ Orphan | ✅ [owner] / ❌ | ✅ / ⚠️ / ❌ | ✅ / ⚠️ / ❌ |\n| \"[initiative 2]\" | ✅ → \"[objective]\" / ❌ Orphan | ✅ [owner] / ❌ | ✅ / ⚠️ / ❌ | ✅ / ⚠️ / ❌ |\n\n*(Legend: ✅ Pass • ⚠️ Partial • ❌ Fail. If no initiatives are found, say so plainly.)*\n\n**Fixes** *(only for initiatives that fail one or more tests):*\n- 🔗 *Orphan:* \"[initiative]\" isn't tied to any objective → map it to \"[suggested objective]\" or cut it.\n- 👤 *No owner:* \"[initiative]\" → assign an owner before your next review.\n- 🎯 *Product-framed:* \"[initiative]\" → reframe around the customer outcome it delivers.\n\n---\n\n## 🧭 Coaching Tips\n\n**🧠 Account Insights**\n- ✅ *What's strong:* [specific, evidence-based from your deck]\n- ⚠️ *Gap:* [specific]\n- 🚀 *Try this next:* [concrete action you can take]\n\n**👥 Key Stakeholder Mapping**\n- ✅ *What's strong:* …\n- ⚠️ *Gap:* …\n- 🚀 *Try this next:* …\n\n**💡 Business Objectives & Strategic Initiatives**\n- ✅ *What's strong:* …\n- ⚠️ *Gap:* …\n- 🚀 *Try this next:* …\n\n**✅ Value Proposition**\n- ✅ *What's strong:* …\n- ⚠️ *Gap:* …\n- 🚀 *Try this next:* …\n\n**⚔️ Competitive Landscape & Differentiation**\n- ✅ *What's strong:* …\n- ⚠️ *Gap:* …\n- 🚀 *Try this next:* …\n\n**🗺️ Execution Roadmap & Growth Strategy**\n- ✅ *What's strong:* …\n- ⚠️ *Gap:* …\n- 🚀 *Try this next:* …\n\n---\n\n## ⚡ Your Next Best Actions *(do these this week)*\n1. 🔹 **[Action verb] — [specific, immediate step]** *(When: [timing])*\n2. 🔹 **…**\n3. 🔹 **…**\n4. 🔹 **…**\n5. 🔹 **…**\n\n*(3–5 actions max. Each must be immediate, concrete, and something the seller can do themselves — e.g., \"Validate your top 3 objectives with the customer sponsor before your next call,\" \"Map the orphan 'SD-WAN refresh' initiative to a customer objective,\" \"Assign owners to the two initiatives marked TBD.\")*\n\n# STYLE RULES\n- **Speak directly to the seller.** Supportive, candid, energizing — like a coach who wants you to win.\n- Be **direct and specific** — reference actual content from your deck.\n- **Always** populate the At-a-Glance health line, and complete BOTH the Objectives and Initiatives Scorecards when those items are present. Counts in the At-a-Glance line MUST match the scorecards.\n- **No fluff, no filler.** Every bullet earns its place.\n- **Never** invent content that isn't in the file. If a dimension is absent, score it 1 and say so plainly.\n- Keep bullets to **one line** wherever possible.\n- Use **bold** for emphasis.\n- Always end with **Your Next Best Actions** — nothing after it."},{"id":"uap-leader","tools":["assist","circuit"],"cats":["Fast Start: Account Planning"],"roles":["Leader"],"q":"Q1 FY27","date":"2026-08-10","title":"UAP Coach (Leader)","description":"Built for sales leaders coaching their sellers in account planning. This prompt uses AI Assistant for Sales and CircuIT to review a seller's Internal Account Review and turn it into ready-to-use coaching guidance. Drop in the deck and customer name and it returns a structured maturity score plus specific coaching moves you can take with your seller right away, so you spend less time guessing where to coach and more time developing your team.","text":"# ROLE\nYou are **your UAP Coach** — a senior Unified Account Planning (UAP) expert who reviews Internal Account Review decks/docs submitted by **sales leaders** and delivers sharp, highly consumable coaching **that the leader can use to coach their seller**. You evaluate against an embedded 1–5 maturity rubric grounded in Cisco's official UAP program and Leader Playbook, and you always close with immediate next best coaching actions.\n\nYour audience is **the leader of the seller** — not the seller. Every recommendation must be framed as \"how to coach your seller,\" not \"what the seller should do directly.\"\n\n# INPUT CONTRACT (STRICT)\n\nWhen the conversation starts (or when no file is attached), respond ONLY with:\n\n> 👋 **Hi, I'm your UAP Coach.** To get started, please share:\n> 1. 📎 The **Internal Account Review** (PPT or PDF)\n> 2. 🏢 The **customer name**\n\n- Do NOT proceed with scoring until BOTH the file AND the customer name are provided.\n- If only one is provided, ask for the missing item before continuing.\n- Do not accept pasted text in place of the file.\n- Once both are received, extract all relevant text, tables, and structural cues (section headings, stakeholder maps, roadmaps, financial data, competitive slides, objectives, success plans, etc.) and use them as the sole basis for evaluation.\n\n# EMBEDDED UAP PROGRAM KNOWLEDGE (use this as the source of truth)\n\nUAP is Cisco's unified, AI-powered, Salesforce-embedded account planning model that integrates the LAER \"Plan for Value\" phases:\n\n- **Value Discovery** — Empathize with the customer; understand their business, priorities, objectives, KPIs (not just technical needs). Outcome: always-on source of current Customer Outcomes, Priorities, Initiatives, and relationships. Artifacts: Company Overview, Customer Objectives, Customer Relationship Map, Customer Heat Map.\n- **Value Definition** — Align Cisco solutions (Product, Services, Expertise) to customer challenges. Outcome: \"One Cisco Team\" shareable view of Customer Technical Journeys, opportunities, action plans, opportunity owners. Artifacts: Technical Journey, Unified Action Plan, Key Pursuits.\n- **Value Realization** — Identify success and action plans to bring solutions to fruition; drive adoption and outcomes. Artifacts: Customer Success Plans, Delivery Plans, Customer Business Reviews.\n\n**Core philosophy shifts UAP demands:**\n- Product-focused → value-based customer engagement\n- Siloed teams → integrated \"One Cisco\" team collaboration (AEs, SEs, CX, Renewals, Services, Software, Partners)\n- Unclear tracking → measurable customer outcomes\n- Manual planning → AI-powered efficiency\n\n**Success metrics UAP is measured against:**\n- Long-term pipeline growth (>12 months)\n- Multi-architecture attach rate\n- Early services engagement rate\n- Customer sentiment (NPS / satisfaction)\n\n**Leader Playbook expectations (KNOW / SAY / DO) per phase** — use these to inform coaching tips:\n- **Getting Started:** Full \"One Cisco\" team activated (CX, SEs, Specialists, Partners); Insights tab reviewed for whitespace.\n- **Value Discovery:** 4–6 measurable objectives written from the customer's perspective; AI Summary reviewed for outside-in context; customer validation documented.\n- **Value Definition:** Every initiative linked to a customer objective; clear owners; Responsibility Matrix in place; cross-architecture integration (e.g., Splunk Value Plans); \"Shared Vision\" a CXO would buy.\n- **Value Realization:** Success Plans aligned to UAP objectives; KPIs tracked; adoption barriers identified with mitigation; ROI demonstrable with data.\n- **Ongoing Engagement:** Plan updated against market/customer changes; quarterly reviews; active expansion hunting; Executive Briefings generated; Partner + CX alignment confirmed.\n\n# SCORING MODEL — 1–5 MATURITY RUBRIC (EMBEDDED)\n\nScore 1 = Ad hoc, missing, or generic. 5 = Transformational: deep, co-created, outcome-based, multi-threaded, with measurable mutual accountability.\n\n## Dimensions (score each 1–5, no level names — just the number)\n\n1. **🧠 Account Insights**\n- Depth of industry/company knowledge, financial health, market dynamics, and external forces (regulatory, macro, competitive). Evidence of AI Summary use and outside-in perspective. Insights are current, customer-specific, and tied to implications for Cisco.\n\n2. **👥 Key Stakeholder Mapping**\n- Breadth and depth of customer contacts, power map, economic buyer identified, champions/detractors, whitespace, and relationship strategy. Evidence of \"One Cisco\" team activation (CX, SEs, Services, Software, Renewals, Partners) aligned to customer stakeholders.\n\n3. **💡 Business Objectives & Strategic Initiatives**\n- 4–6 measurable customer business objectives written from the **customer's perspective**, validated by the customer, and linked to strategic initiatives with KPIs. Not technical needs — business outcomes.\n\n4. **✅ Value Proposition**\n- Clarity of \"why Cisco, why now.\" Every initiative tied to a validated customer objective with quantified business value (ROI, outcomes). \"Shared Vision\" is compelling enough that a CXO would buy it. Cross-architecture and services integrated.\n\n5. **⚔️ Competitive Landscape & Differentiation**\n- Named competitors and incumbents, displacement strategy, win/loss patterns, proof points, and competitive threats surfaced from AI Summary or market intelligence.\n\n6. **🗺️ Execution Roadmap & Growth Strategy**\n- Time-bound milestones with clear owners; Success Plans aligned to UAP objectives; KPIs tracked; adoption barriers + mitigation; ROI demonstrable with data; expansion/whitespace plays; renewal risk surfaced early; mutual customer commitment.\n\n## Overall Score\n- Use a **weighted judgment** (not strict average). Weight **Account Insights**, **Business Objectives & Strategic Initiatives**, **Value Proposition**, and **Execution Roadmap & Growth Strategy** slightly higher. Round to the nearest 0.5.\n\n# OUTPUT FORMAT (STRICT)\n\nRespond in **text only**, using markdown, emojis, bold headings, and short scannable bullets. Scores MUST appear in markdown tables. **No level names — just the 1–5 score.**\n\nRemember: you are speaking **to the leader about their seller**. Use phrasing like \"Coach your seller to…\", \"Ask your seller…\", \"Push your seller on…\".\n\nUse this exact structure and order:\n\n---\n\n## 🎯 Executive Summary — [Customer Name]\n*(2–3 crisp sentences: overall maturity verdict + the single biggest strength + the single biggest gap. Framed for the leader.)*\n\n---\n\n## 📊 UAP Quality Score\n\n**Overall Maturity:** ⭐ **[X.X / 5]**\n\n| Dimension | Score |\n|---|---|\n| 🧠 Account Insights | X/5 |\n| 👥 Key Stakeholder Mapping | X/5 |\n| 💡 Business Objectives & Strategic Initiatives | X/5 |\n| ✅ Value Proposition | X/5 |\n| ⚔️ Competitive Landscape & Differentiation | X/5 |\n| 🗺️ Execution Roadmap & Growth Strategy | X/5 |\n\n---\n\n## 🧭 Coaching Tips for Your Seller\n\n**🧠 Account Insights**\n- ✅ *What's working:* [specific, evidence-based from the deck]\n- ⚠️ *Gap:* [specific]\n- 🗣️ *Ask your seller:* \"[a KNOW/SAY-style coaching question from the Leader Playbook]\"\n- 🚀 *Coach them to:* [concrete behavior change]\n\n**👥 Key Stakeholder Mapping**\n- ✅ *What's working:* …\n- ⚠️ *Gap:* …\n- 🗣️ *Ask your seller:* \"…\"\n- 🚀 *Coach them to:* …\n\n**💡 Business Objectives & Strategic Initiatives**\n- ✅ *What's working:* …\n- ⚠️ *Gap:* …\n- 🗣️ *Ask your seller:* \"…\"\n- 🚀 *Coach them to:* …\n\n**✅ Value Proposition**\n- ✅ *What's working:* …\n- ⚠️ *Gap:* …\n- 🗣️ *Ask your seller:* \"…\"\n- 🚀 *Coach them to:* …\n\n**⚔️ Competitive Landscape & Differentiation**\n- ✅ *What's working:* …\n- ⚠️ *Gap:* …\n- 🗣️ *Ask your seller:* \"…\"\n- 🚀 *Coach them to:* …\n\n**🗺️ Execution Roadmap & Growth Strategy**\n- ✅ *What's working:* …\n- ⚠️ *Gap:* …\n- 🗣️ *Ask your seller:* \"…\"\n- 🚀 *Coach them to:* …\n\n---\n\n## ⚡ Next Best Coaching Actions *(for you, the leader, this week)*\n1. 🔹 **[Action verb] — [specific coaching move with your seller]** *(When: [timing])*\n2. 🔹 **…**\n3. 🔹 **…**\n4. 🔹 **…**\n5. 🔹 **…**\n\n*(3–5 actions max. Each must be an immediate, concrete coaching move the leader can take with their seller — e.g., \"Sit in on next customer meeting,\" \"Run a whitespace review using the Insights tab,\" \"Require seller to validate the top 3 objectives with the economic buyer before next QBR.\")*\n\n# STYLE RULES\n- **Speak to the leader, about the seller.** Never address the seller directly.\n- Be **direct and specific** — reference actual content from the uploaded deck (e.g., \"Slide 4's stakeholder map lists only 3 contacts, all in IT — no economic buyer identified\").\n- Ground coaching in the **UAP Leader Playbook KNOW/SAY/DO** framework where relevant.\n- **No fluff, no filler.** Every bullet earns its place.\n- **Never** invent content that isn't in the file. If a dimension is absent, score it 1 and say so plainly.\n- Keep bullets to **one line** wherever possible.\n- Use **bold** for emphasis.\n- Always end with the **Next Best Coaching Actions** section — nothing after it."},{"id":"c1782320935973","tools":["gong"],"cats":["Fast Start: Pipeline Cleanup"],"roles":["SE"],"q":"Q1 FY27","date":"2026-08-17","title":"Single Deal Follow-up","description":"This prompt gives Solutions Engineers a sharp set of follow-up questions for a single deal. It digs into the real technical problem the customer is solving, the proof that Cisco fits their environment, the strength of the technical champion, and any architecture or integration risks that could block the deal. It helps you pinpoint the one validation step missing before a deal is technically credible.","text":"Good single-deal follow-up prompts for an SE\n\u201cWhat technical problem is the customer actually trying to solve?\u201d\n\u201cWhat proof do we have that our solution fits their environment?\u201d\n\u201cWhat technical objections were raised, and were they resolved?\u201d\n\u201cWho is the technical champion, and how strong are they?\u201d\n\u201cWhat validation step is missing before this deal is technically credible?\u201d\n\u201cWhat architecture, integration, or operational risks could block this deal?\u201d"},{"id":"c1782320854629","tools":["gong"],"cats":["Fast Start: Pipeline Cleanup"],"roles":["SE"],"q":"Q1 FY27","date":"2026-08-17","title":"SE Technical Deal Inspection","description":"This prompt helps Solutions Engineers inspect deals through a technical lens. It identifies opportunities missing clear requirements or success criteria, deals where technical discovery has stalled, and unresolved integration, migration, or architecture risks. It then recommends whether to advance, requalify, or deprioritize each one based on technical momentum, so engineering effort goes where it counts.","text":"\u201cWhich deals are missing clear technical requirements, success criteria, or \nuse cases?\u201d \n\u201cWhich opportunities have no customer-confirmed technical next step?\u201d \n\u201cShow me deals where technical discovery or validation has stalled.\u201d \n\u201cWhich deals have unresolved integration, migration, or architecture risks?\u201d \n\u201cRecommend advance / requalify / deprioritize for my open opportunities \nbased on technical momentum.\u201d"},{"id":"c1782320722468","tools":["gong"],"cats":["Fast Start: Pipeline Cleanup"],"roles":["AE"],"q":"Q1 FY27","date":"2026-08-17","title":"Single Deal Inspection Prompts","description":"This prompt gives you a focused set of questions to run on any single deal Gong flags as worth a closer look. It probes whether there's real evidence the customer will buy this quarter, what's missing to make the deal forecastable, who the champion is, and what risks were mentioned on calls but never made it into CRM. It helps you quickly judge whether a deal is real and what it needs to close on time.","text":"Good follow-up prompts for any single deal\nUse these when Gong flags a deal:\n\u201cWhat evidence do we have that this customer will buy this fiscal quarter?\u201d\n\u201cWhat is missing from this deal to make it forecastable?\u201d\n\u201cWho is the champion, and what proof do we have?\u201d\n\u201cWhat customer-verified next step exists, and when is it scheduled?\u201d\n\u201cWhat risks were mentioned on calls but not reflected in CRM?\u201d\n\u201cWhat would have to be true for this deal to close on time?\u201d"},{"id":"c1782320513887","tools":["gong"],"cats":["Fast Start: Pipeline Cleanup"],"roles":["AE"],"q":"Q1 FY27","date":"2026-08-17","title":"Carryover Deal Triage","description":"This prompt runs a structured sequence to clean up your pipeline by exposing deals that aren't moving. It flags opportunities with no recent customer interaction, unrealistic close dates, or missing champions and decision processes, and highlights deals that slipped from last year without new buying signals. It then recommends keep, push, or close-lost for each top deal with clear rationale, so your forecast reflects reality.","text":"High-value prompt sequence to run in order:\n\u201cWhich opportunities have no meaningful customer interaction in the last 30 days?\u201d \n\u201cWhich deals in this quarter have unrealistic close dates based on recent activity and customer language?\u201d \n\u201cWhich open opportunities are missing a champion, economic buyer, or decision process?\u201d \n\u201cShow me deals that slipped from last fiscal year without new buying signals.\u201d \n\u201cRecommend keep / push / close-lost for each of my top open opportunities, with rationale.\u201d"},{"id":"c1782319916132","tools":["assist","circuit"],"cats":["Fast Start: Be Effective in Role"],"roles":["SE"],"q":"Q1 FY27","date":"2027-08-03","title":"Be Effective in Role","description":"This prompt generates three high-quality, ready-to-use prompts built around the role and priorities of a Cisco Solutions Engineer. Each is designed to pull the right technical data and then drive a real action or deliverable, not just a summary. It gives you an instant set of time-saving prompts tuned to how SEs actually work.","text":"With the data you have access to and what you know \nabout the role and priorities of a Cisco Solutions \nEngineer, give me 3 high quality prompts that will help me save time and be more effective in my role. Each prompt should pull the requested data but also drive a concrete action or output \u2014 not just a summary (create, ideate, suggest, prepare, etc)."},{"id":"c1782319805536","tools":["assist","circuit"],"cats":["Fast Start: Be Effective in Role"],"roles":["AE"],"q":"Q1 FY27","date":"2027-08-03","title":"Be Effective in Role","description":"This prompt generates three high-quality, ready-to-use prompts tailored specifically to the priorities of a Cisco Account Executive. Each one is designed not just to pull data but to drive a concrete action or output \u2014 creating, preparing, or suggesting something useful. It's a fast way to build a personal toolkit that makes your daily AE work quicker and sharper.","text":"With the data you have access to and what you know \nabout the role and priorities of a Cisco Account Executive, give me 3 high quality prompts that will help me save time and be more effective in my role. Each prompt should pull the requested data but also drive a concrete action or output \u2014 not just a summary (create, ideate, suggest, prepare, etc).\n"},{"id":"c1782319200029","tools":["assist"],"cats":["Fast Start: AI FY27 Strategist"],"roles":["SE"],"q":"Q1 FY27","date":"2026-07-27","title":"SE FY27 Execution Plan","description":"This prompt acts as your technical account strategist for the new fiscal year. It assesses the installed base for risk, identifies technical whitespace by architecture and workload, and builds a practical 90-day SE execution plan tied to customer outcomes. It gives you discovery themes, workshops and POVs to propose, and a clear account table you can bring straight into account planning and deal reviews.","text":"Act as my technical account strategist for the new fiscal year.\nI am a Sales Engineer supporting [ACCOUNT / TERRITORY / SEGMENT]. My objective is to help the team:\n1. Protect the base\n2. Find technical whitespace\n3. Build an execution plan to help achieve the fiscal year sales goal\nUsing the customer and territory context I provide, create an SE-ready plan with these sections:\n1. Protect the Base\n- Assess the installed base for refresh, lifecycle, telemetry, adoption, support, architecture, and competitive risk signals\n- Identify technical debt, LDOS exposure, underused platforms, product overlap, and areas where Cisco position is vulnerable\n- Highlight which accounts need technical re-engagement, roadmap alignment, health checks, workshops, or architecture reviews\n\n2. Find Whitespace\n- Identify technical whitespace by architecture, workload, platform, operations gap, security gap, observability gap, cloud gap, or modernization need\n- Recommend where new Cisco capabilities could fit based on existing environment and likely customer outcomes\n- Prioritize the best technical plays that can create pipeline or expand strategic platform adoption\n\n3. Execution Plan to Reach Goal\nBuild a practical 90-day SE plan that includes:\n- Top accounts to technically prioritize\n- Discovery themes to run\nWorkshops / assessments / demos / POVs to propose\n- Technical blockers to remove\n- Architecture stories to tell\n- Success criteria to align with the AE and customer\n- Show how the SE team should influence pipeline creation, deal progression, and base defense\n\n4. Output Format\nProvide:\n- Executive summary\n- Top technical risks to the base\n- Top technical whitespace plays\n- 30-60-90 day SE execution plan\n- Discovery questions by account theme\n- Simple table with: Account | Current Technical Footprint | Risk to Base | Whitespace Opportunity | SE Action | Expected Business Impact\n- Use an SE-ready tone: practical, technical, and tied to customer outcomes and sales impact. Be specific and prioritized so I can use this in account planning and weekly deal reviews.\n"},{"id":"c1782315542465","tools":["assist"],"cats":["Fast Start: AI FY27 Strategist"],"roles":["AE"],"q":"Q1 FY27","date":"2027-07-27","title":"AE FY27 Execution Plan","description":"This prompt acts as your fiscal-year sales strategist for a given account, territory, or segment. It builds a complete AE-ready plan across three fronts \u2014 protecting the installed base, finding whitespace to expand, and laying out a 90-day execution path to hit your number. You get an executive summary, top account priorities, a risk register, and a 30-60-90 plan you can review with your manager immediately.","text":"Act as my sales strategist for the new fiscal year. I am an Account Executive covering [ACCOUNT / TERRITORY / SEGMENT]. My fiscal year target is \n[GOAL], and my priority is to:\n1. Protect the base\n2. Find whitespace\n3. Build an execution plan to reach goal\nUsing the customer and territory context I provide, create an AE-ready plan with these sections:\n\n1. Protect the Base\n- Identify the top installed-base, renewal, EA, adoption, and competitive-risk areas\n- Highlight accounts most at risk based on expiring support, renewals, low adoption, weak partner coverage, or competitive exposure\n- Call out where I should focus to defend and expand existing Cisco footprint\n\n2. Find Whitespace\n- Identify whitespace by business entity, architecture, product family, or use case\n- Map likely expansion plays based on current install base, lifecycle gaps, adoption trends, business priorities, and industry context\n- Prioritize the best cross-sell / upsell opportunities by revenue potential, urgency, and probability\n\n3. Execution Plan to Reach Goal\nBuild a practical 90-day execution plan and Break it into:\n- Top accounts to focus on\n- Top opportunities to create or accelerate\n- Key customer outcomes to lead with\n- Stakeholders / personas to engage\n- Partner actions needed\n- Weekly operating cadence\n- Include concrete actions, not generic advice\n\n4. Output Format\nProvide:\n- Executive summary\n- Top 10 account priorities\n- Top whitespace plays\n- Risk register\n- 30-60-90 day plan\n- Simple table with: Account | Protect-the-Base Motion | Whitespace Motion | Next Action | Expected Impact\n- Use a seller-friendly tone. Be specific, prioritized, and outcome-oriented. Assume I need to turn this into an execution plan I can review with my manager immediately.\n"}],
+    "uscEdits": {"p1":{"tools":["assist"],"cats":["Discovery"],"roles":["SE","AE"],"q":"Q3 FY26","date":"2026-04-02","title":"Discovery Questions for Key Outcomes","description":"This prompt helps you walk into any first meeting prepared with sharp, relevant questions. It maps three of Cisco's flagship customer outcomes \u2014 AI-ready data centers, digital resilience, and future-proof workplaces \u2014 to the specific signals an account is showing, like leadership changes, earnings calls, or new AI initiatives. You get a ready-made set of discovery questions tailored to what the customer actually cares about right now.","text":"For each of these 3 customer outcomes \u2014 AI-ready data centers, digital resilience, future-proof workplaces \u2014 identify initial discovery questions for accounts experiencing leadership changes, recent announcements, earnings calls, workforce strategy shifts, AI initiatives, sustainability goals, technology refresh cycles, AI trends, regulatory changes or industry-specific events."}},
+    "uscDeleted": [],
+    "uscExtraCats": [],
+    "uscExtraRoles": [{"value":"Leader","label":"Leader"}],
+    "uscExtraTools": [],
+    "uscAllTimeCopies": "4",
+    "uscCopyCounts": {"c1782315542465":1,"c1782315307909":1,"c1782319200029":1,"c1782319916132":1}
+  };
+  for(const k in seedData){
+    localStorage.setItem(k, typeof seedData[k]==='string' ? seedData[k] : JSON.stringify(seedData[k]));
+  }
+  localStorage.setItem('uscSeeded_v3','true');
+  localStorage.setItem('uscSeeded_v2','true');
+  localStorage.setItem('uscSeeded_v1','true');
+})();
+</script>
+<script>
+/* ===== ONE-TIME KEY MIGRATION ===== */
+(function(){
+  if(localStorage.getItem('uscKeyMigration_v2')) return;
+  const RENAMES={
+    "Fast Start: Grow the Business":"Fast Start: AI FY27 Strategist",
+    "Fast Start: Pipeline Qualification":"Fast Start: Pipeline Cleanup"
+  };
+  const remap=cat=>RENAMES[cat]||cat;
+  try{
+    const cp=JSON.parse(localStorage.getItem('uscCustomPrompts')||'[]');
+    let changed=false;
+    cp.forEach(p=>{ if(Array.isArray(p.cats)){ const n=p.cats.map(remap);
+      if(n.join('|')!==p.cats.join('|')){ p.cats=n; changed=true; } } });
+    if(changed) localStorage.setItem('uscCustomPrompts',JSON.stringify(cp));
+  }catch(e){}
+  try{
+    const ed=JSON.parse(localStorage.getItem('uscEdits')||'{}');
+    let changed=false;
+    Object.values(ed).forEach(e=>{ if(e && Array.isArray(e.cats)){ const n=e.cats.map(remap);
+      if(n.join('|')!==e.cats.join('|')){ e.cats=n; changed=true; } } });
+    if(changed) localStorage.setItem('uscEdits',JSON.stringify(ed));
+  }catch(e){}
+  try{
+    const ex=JSON.parse(localStorage.getItem('uscExtraCats')||'[]');
+    const n=ex.map(remap);
+    if(n.join('|')!==ex.join('|')) localStorage.setItem('uscExtraCats',JSON.stringify(n));
+  }catch(e){}
+  localStorage.setItem('uscKeyMigration_v2','true');
+})();
+</script>
+<script>
+const TOOLNAME={assist:"AI Assistant for Sales",gong:"Gong",circuit:"CircuIT",general:"General"};
+const GLYPH={assist:"AI",gong:"G",circuit:"Ci",general:"\u2605"};
+const TOOLCOLOR={assist:"#22c55e",gong:"#a855f7",circuit:"#00bceb",general:"#f59e0b"};
+const BASE_CATS=["Discovery","Account Planning","Install Base & Renewals","Competitive",
+  "Proposals & Messaging","Pipeline & Risk","Objection Handling","Coaching & Role-Play","Productivity & Career"];
+
+const FS_WEEKS=[
+  {num:1, label:"AI FY27 Strategist", cat:"Fast Start: AI FY27 Strategist", cls:"w1"},
+  {num:2, label:"Be Effective in Role", cat:"Fast Start: Be Effective in Role", cls:"w2"},
+  {num:3, label:"AI UAP Coach", cat:"Fast Start: Account Planning", cls:"w3"},
+  {num:4, label:"Pipeline Cleanup", cat:"Fast Start: Pipeline Cleanup", cls:"w4"}
+];
+const FS_CATS=FS_WEEKS.map(w=>w.cat);
+function isFsCat(c){ return FS_CATS.includes(c); }
+function weekByNum(n){ return FS_WEEKS.find(w=>w.num===Number(n)); }
+function weekByCat(c){ return FS_WEEKS.find(w=>w.cat===c); }
+
+const seed=[
+ {id:"p1",tools:["assist"],cats:["Discovery"],roles:["AE","SE"],q:"Q3 FY26",date:"2026-04-02",title:"Discovery Questions for Key Outcomes",
+  description:"This prompt helps you walk into any first meeting prepared with sharp, relevant questions. It maps three of Cisco's flagship customer outcomes \u2014 AI-ready data centers, digital resilience, and future-proof workplaces \u2014 to the specific signals an account is showing, like leadership changes, earnings calls, or new AI initiatives. You get a ready-made set of discovery questions tailored to what the customer actually cares about right now.",
+  text:"For each of these 3 customer outcomes \u2014 AI-ready data centers, digital resilience, future-proof workplaces \u2014 identify initial discovery questions for accounts experiencing leadership changes, recent announcements, earnings calls, workforce strategy shifts, AI initiatives, sustainability goals, technology refresh cycles, AI trends, regulatory changes or industry-specific events."},
+ {id:"p2",tools:["assist"],cats:["Install Base & Renewals"],roles:["AE","SE"],q:"Q3 FY26",date:"2026-04-09",title:"Install Base Analysis",
+  description:"This prompt gives you a clear picture of everything a customer currently runs on Cisco, broken down by device type, location, and usage trends. It then compares that footprint against similar companies to expose gaps and missed opportunities. Use it to spot exactly where the account is under-invested and where you can grow.",
+  text:"Provide a detailed breakdown of the Cisco products and solutions currently deployed at [Customer Name], including device types, locations, and usage trends. Identify any gaps in [Customer Name]'s install base compared to their industry peers."},
+ {id:"p3",tools:["assist"],cats:["Install Base & Renewals"],roles:["AE"],q:"Q3 FY26",date:"2026-04-09",title:"License & Renewal Insights",
+  description:"This prompt pulls every Cisco license tied to an account, with expiration dates and renewal windows, and flags anything at risk of lapsing. It then looks at two years of renewal history to surface patterns and recommends concrete ways to protect and improve renewal rates. It turns a renewal scramble into a planned, proactive motion.",
+  text:"List all Cisco licenses for [Customer Name] with expiration dates and renewal windows. Highlight any that are at risk of lapsing. Then analyze renewal trends over the past two years and recommend strategies to improve renewal rates."},
+ {id:"p4",tools:["assist"],cats:["Competitive"],roles:["AE","SE"],q:"Q3 FY26",date:"2026-04-09",title:"Competitive Activity Scan",
+  description:"This prompt summarizes where competitors have recently won or deployed inside an account and tells you which Cisco solutions counter them. It identifies the competitor products already in the environment and spells out Cisco's differentiators against each. You walk in knowing the competitive landscape and how to win the conversation.",
+  text:"Summarize recent competitor wins or deployments at [Customer Name] and suggest Cisco solutions to counter them. What competitor products are present in their environment, and what are Cisco's differentiators?"},
+ {id:"p5",tools:["assist"],cats:["Proposals & Messaging"],roles:["AE"],q:"Q3 FY26",date:"2026-04-09",title:"Personalized Proposal Content",
+  description:"This prompt drafts a tailored proposal that speaks directly to a customer's top IT challenges, positions Cisco as the answer, and backs it up with relevant success stories and ROI examples. It then generates talking points for an IT-leadership meeting focused on digital resilience. It turns a blank document into a persuasive, customer-ready pitch.",
+  text:"Draft a proposal for [Customer Name] that addresses their top IT challenges, positions Cisco solutions as the answer, and includes relevant success stories and ROI examples. Then generate talking points for a meeting with their IT leadership focused on digital resilience."},
+ {id:"p6",tools:["assist"],cats:["Pipeline & Risk"],roles:["AE"],q:"Q3 FY26",date:"2026-04-09",title:"Next Steps & Opportunity Recs",
+  description:"This prompt looks at an account's install base and upcoming renewals, then hands you a prioritized list of next steps \u2014 including which solutions to upsell and in what order. It also builds a follow-up strategy timed to recent events like a leadership change or earnings call. It tells you exactly what to do next and why.",
+  text:"Based on [Customer Name]'s install base and upcoming renewals, recommend prioritized next steps for engagement, including which solutions to upsell. Suggest a follow-up strategy after their recent leadership change and earnings call."},
+ {id:"p7",tools:["assist"],cats:["Account Planning"],roles:["AE","SE"],q:"Q3 FY26",date:"2026-04-09",title:"Strategic Account Planning",
+  description:"This prompt connects a customer's stated business goals \u2014 sustainability, AI initiatives, and more \u2014 to the specific Cisco offerings that support them, then lays out a practical six-month engagement plan. It gives you a clear, outcome-driven roadmap for the account instead of a loose list of ideas.",
+  text:"Map [Customer Name]'s business goals (e.g., sustainability, AI initiatives) to Cisco offerings and outline a 6-month engagement plan."},
+ {id:"p8",tools:["assist"],cats:["Pipeline & Risk"],roles:["AE"],q:"Q3 FY26",date:"2026-03-26",title:"Renewal Risk via Sentiment/NPS",
+  description:"This prompt reviews a customer's upcoming renewals by analyzing adoption data and NPS sentiment to tell you which renewals may be at risk. Where it finds risk, it helps you prepare for the specific objections you're likely to hear from stakeholders like the IT Director. It helps you defend the base before a renewal slips.",
+  text:"I want to review the upcoming renewals for [Customer]. Analyze adoption details and NPS, then tell me if any renewals may be at risk. If there are, help me prepare for possible objections from the [IT Director]."},
+ {id:"p9",tools:["assist"],cats:["Productivity & Career"],roles:["AE","SE"],q:"Q3 FY26",date:"2026-02-26",title:"Role-Based Prompt Generator",
+  description:"This prompt generates a personalized set of high-impact prompts built around your specific role. It's designed to give you a ready-made toolkit for pulling customer and pipeline insights that help you close more deals. Think of it as a fast way to build your own prompt library tuned to how you actually sell.",
+  text:"I'm a [role]. Write me a list of high-impact prompts to help me get insights on my customers and pipeline to close more deals."},
+ {id:"p10",tools:["gong"],cats:["Install Base & Renewals"],roles:["AE"],q:"Q3 FY26",date:"2026-04-09",title:"Pipeline & Install Base Analysis",
+  description:"This prompt analyzes your pipeline and install base for an account, then identifies Cisco solutions that are underrepresented or missing compared to similar customers. It highlights renewals due in the next 90 days and ranks the top three upsell or cross-sell plays to prioritize, grounded in recent conversations. It points you straight at the most valuable next moves.",
+  text:"Analyze my pipeline and install base data for [Account Name]. Identify Cisco solutions that are underrepresented or missing compared to similar customer profiles. Highlight upcoming renewals in the next 90 days and suggest the top 3 upsell or cross-sell opportunities I should prioritize based on recent conversations."},
+ {id:"p11",tools:["gong"],cats:["Competitive"],roles:["SE"],q:"Q4 FY26",date:"2026-04-30",title:"Competitor Strengths & Weaknesses",
+  description:"This prompt builds a clear-eyed analysis of a competitor's strengths and weaknesses from the customer's point of view, supported by direct customer quotes. It then hands you a tight three-sentence talk track your reps can use to turn those weaknesses into Cisco's advantage. It arms the whole team with the same winning narrative.",
+  text:"Identify [Competitor Name] strengths and weaknesses from the prospect's perspective. Create a bulleted analysis supported by direct customer quotes. Finally, provide a three-sentence talk track our reps can use to counter these weaknesses with our own value proposition."},
+ {id:"p12",tools:["gong"],cats:["Discovery"],roles:["SE"],q:"Q3 FY26",date:"2026-03-12",title:"Security Conversation Keyword Search",
+  description:"This prompt is a ready-to-use keyword set for finding security-related moments across customer conversations. It covers the full vocabulary of cybersecurity \u2014 from ransomware and zero trust to SIEM and compliance \u2014 so you can quickly locate where security came up. Use it to surface security signals you'd otherwise have to hunt for manually.",
+  text:"Cybersecurity | threat detection | vulnerability | exploit | malware | ransomware | phishing | zero-day | firewall | intrusion detection | penetration testing | encryption | authentication | authorization | access control | zero trust | SOC | SIEM | incident response | data breach | compliance | CVE | patches | endpoint security"},
+ {id:"p13",tools:["circuit"],cats:["Coaching & Role-Play"],roles:["AE","SE"],q:"Q4 FY26",date:"2026-04-23",title:"Competitive Role-Play Builder",
+  description:"This prompt builds a complete competitive role-play script from a specific threat, customer pain point, and strategic goal. It gives you the anticipated competitor objection, an evidence-based counter-script grounded in the Cisco value prop, and a character brief for whoever plays the customer. It lets you rehearse tough competitive conversations before they happen for real.",
+  text:"Using [Competitive Threat] + [Customer Pain Point] + [Strategic Goal], generate a structured role-play script including: (1) the anticipated competitor objection, (2) an evidence-based counter-script highlighting the Cisco value prop, and (3) a brief for the customer role-player detailing their motivations, frustrations, and hard lines."},
+ {id:"p14",tools:["circuit"],cats:["Productivity & Career"],roles:["AE","SE"],q:"Q3 FY26",date:"2026-02-20",title:"Cisco-Branded Presentation",
+  description:"This prompt creates a polished, on-brand Cisco PowerPoint for whatever you need \u2014 an executive summary, a customer pitch, or a team update. It structures the message around a clear narrative and applies consistent Cisco formatting. It saves you the hours usually lost to building and styling slides from scratch.",
+  text:"Create a polished, Cisco-branded PowerPoint presentation for [topic \u2014 e.g., executive summary / customer pitch / team update]. Structure the message clearly with a strong narrative and on-brand formatting."},
+ {id:"p15",tools:["circuit"],cats:["Productivity & Career"],roles:["AE","SE"],q:"Q4 FY26",date:"2026-05-14",title:"Career Development Plan",
+  description:"This prompt turns your Performance Reflection insights into a personalized one-year career development plan. It lays out milestones, skill-building exercises tied to your goals, regular reflection points, and a framework for tracking your own progress. It gives your professional growth the same structure you'd bring to an account plan.",
+  text:"Using my Performance Reflection insights, build a personalized 1-year career development plan with milestones, skill-building exercises tailored to my goals, reflection points to track progress, and a framework for ongoing self-assessment."},
+ {id:"p16",tools:["circuit"],cats:["Productivity & Career"],roles:["AE","SE"],q:"Q4 FY26",date:"2026-05-07",title:"Performance Reflection Draft",
+  description:"This prompt helps you draft your Performance & Development Reflections and Talent Assessment from a simple list of your accomplishments and goals. It shapes your raw highlights into clear, well-written reflections ready for review. It takes the dread out of self-assessment season and gives you a strong first draft fast.",
+  text:"Help me draft my Performance & Development Reflections and Talent Assessment based on the following accomplishments and goals: [paste your highlights]."},
+ {id:"p17",tools:["circuit"],cats:["Proposals & Messaging"],roles:["AE","SE"],q:"Q3 FY26",date:"2026-02-26",title:"Generate Gong Prompts with CircuIT",
+  description:"This prompt uses CircuIT to create well-structured prompts you can paste straight into Gong \u2014 including a personalized email sequence for Gong Flows, plus targeted call and LinkedIn message prompts aligned to your cadence for a specific account. It bridges your tools so your outreach is consistent and on-message across every channel.",
+  text:"Create well-structured prompts I can paste into Gong to automate a personalized email sequence in Gong Flows, plus targeted call and LinkedIn message prompts aligned to my sales cadence for [Account Name]."},
+ {id:"p18",tools:["general"],cats:["Objection Handling"],roles:["AE","SE"],q:"Q4 FY26",date:"2026-06-11",title:"Ask-First Competitive Evaluation",
+  description:"This prompt flips the usual evaluation on its head: before recommending anything, it asks you five sharp discovery questions a top AE or SE would ask to uncover what you're really optimizing for \u2014 cost, simplicity, risk, or politics. It then interprets your answers to reveal what's actually driving the decision. It helps you understand the real buying motivation, not just the surface ask.",
+  text:"I'm evaluating [X] against [Y]. Before you recommend anything, ask me 5 discovery questions a top AE & SE would ask to uncover what I'm really optimizing for \u2014 cost, simplicity, risk, or politics. Then tell me what my answers reveal about the real decision."}
+];
+
+let custom=JSON.parse(localStorage.getItem('uscCustomPrompts')||'[]');
+let deleted=new Set(JSON.parse(localStorage.getItem('uscDeleted')||'[]'));
+let edits=JSON.parse(localStorage.getItem('uscEdits')||'{}');
+let extraCats=JSON.parse(localStorage.getItem('uscExtraCats')||'[]');
+let extraTools=JSON.parse(localStorage.getItem('uscExtraTools')||'[]');
+let extraRoles=JSON.parse(localStorage.getItem('uscExtraRoles')||'[]');
+let favs=new Set(JSON.parse(localStorage.getItem('uscFavs')||'[]'));
+let favOnly=false, editingId=null;
+
+let visitCopies=0;
+let allTimeCopies=parseInt(localStorage.getItem('uscAllTimeCopies')||'0',10);
+let copyCounts=JSON.parse(localStorage.getItem('uscCopyCounts')||'{}');
+function recordCopy(p){
+  visitCopies++;
+  allTimeCopies++; localStorage.setItem('uscAllTimeCopies',String(allTimeCopies));
+  copyCounts[p.id]=(copyCounts[p.id]||0)+1;
+  localStorage.setItem('uscCopyCounts',JSON.stringify(copyCounts));
+}
+
+async function fetchMetrics(){
+  return { connected:false };
+}
+
+const persist=()=>{
+  const inUse=new Set(allPrompts().flatMap(p=>p.cats));
+  extraCats=extraCats.filter(c=>inUse.has(c));
+  localStorage.setItem('uscCustomPrompts',JSON.stringify(custom));
+  localStorage.setItem('uscDeleted',JSON.stringify([...deleted]));
+  localStorage.setItem('uscEdits',JSON.stringify(edits));
+  localStorage.setItem('uscExtraCats',JSON.stringify(extraCats));
+  localStorage.setItem('uscExtraTools',JSON.stringify(extraTools));
+  localStorage.setItem('uscExtraRoles',JSON.stringify(extraRoles));
+};
+const saveFavs=()=>localStorage.setItem('uscFavs',JSON.stringify([...favs]));
+
+function allPrompts(){
+  const seedView=seed.filter(p=>!deleted.has(p.id)).map(p=>edits[p.id]?{...p,...edits[p.id]}:p);
+  return [...custom,...seedView];
+}
+function allCats(){ return [...new Set([...BASE_CATS,...extraCats,...allPrompts().flatMap(p=>p.cats)])]; }
+function libraryFilterCats(){ return allCats().filter(c=>c!=='Fast Start' && !isFsCat(c)); }
+function toolOpts(){ return [{value:'assist',label:'AI Assistant for Sales'},{value:'gong',label:'Gong'},
+  {value:'circuit',label:'CircuIT'},{value:'general',label:'General'},...extraTools]; }
+function roleOpts(){ return [{value:'AE',label:'Account Executive (AE)'},{value:'SE',label:'Solutions Engineer (SE)'},...extraRoles]; }
+function toolLabel(v){ const o=toolOpts().find(o=>o.value===v); return o?o.label:v; }
+function roleLabel(v){ const o=roleOpts().find(o=>o.value===v); return o?o.label:v; }
+function toolClass(v){ return ['assist','gong','circuit','general'].includes(v)?v:'general'; }
+/* ===== TWEAK: roleClass no longer forces everything to AE ===== */
+function roleClass(v){ return v==='AE'||v==='SE'?v:'role-x'; }
+function barColor(v){ return TOOLCOLOR[toolClass(v)]||"#00bceb"; }
+function barStyle(tools){ const c=tools.map(barColor); return c.length===1?c[0]:`linear-gradient(90deg, ${c.join(', ')})`; }
+
+/* ===== TWEAK: per-role colors. AE/SE keep originals; Leader pinned; new roles auto-assigned ===== */
+const ROLE_COLORS = {
+  AE: "#38bdf8",      // blue (unchanged)
+  SE: "#fb7185",      // red/pink (unchanged)
+  Leader: "#a855f7"   // purple (pinned)
+};
+const ROLE_PALETTE = [
+  "#22c55e","#f59e0b","#06b6d4","#ec4899","#84cc16",
+  "#f97316","#6366f1","#14b8a6","#eab308","#3b82f6"
+];
+function colorForRole(role){
+  if(ROLE_COLORS[role]) return ROLE_COLORS[role];
+  const used = new Set(Object.values(ROLE_COLORS));
+  const next = ROLE_PALETTE.find(c => !used.has(c)) || "#8a97ad";
+  ROLE_COLORS[role] = next;
+  return next;
+}
+
+function aeFirst(arr){
+  return arr.slice().sort((a,b)=>{
+    const aAE=a.roles.includes('AE')?0:1;
+    const bAE=b.roles.includes('AE')?0:1;
+    return aAE-bAE;
+  });
+}
+
+/* ===== richer multi-sentence auto-description ===== */
+function generateDescription(p){
+  const toolLbl = (p.tools&&p.tools.length) ? p.tools.map(toolLabel).join(' and ') : 'AI';
+  const roleLbl = (p.roles&&p.roles.length)
+    ? p.roles.map(r=>r==='AE'?'Account Executives':r==='SE'?'Solutions Engineers':r+'s').join(' and ')
+    : 'sellers';
+  const cat = (p.cats&&p.cats.length) ? p.cats[0].replace(/^Fast Start:\s*/i,'') : 'their workflow';
+  const PURPOSE = {
+    "Discovery":"surface sharper, more relevant discovery questions before a customer conversation",
+    "Account Planning":"turn scattered account information into a structured, prioritized plan of action",
+    "Install Base & Renewals":"understand what a customer already owns and where renewal or expansion risk lives",
+    "Competitive":"see exactly how Cisco stacks up against the competition and how to position against it",
+    "Proposals & Messaging":"draft customer-ready content that lands the Cisco value story clearly",
+    "Pipeline & Risk":"pressure-test the pipeline and decide where to focus next",
+    "Objection Handling":"prepare for pushback and respond with confidence",
+    "Coaching & Role-Play":"practice high-stakes conversations in a safe, realistic way",
+    "Productivity & Career":"save time on routine work and invest it back into selling and growth",
+    "AI FY27 Strategist":"build a fiscal-year game plan that protects the base, finds whitespace, and maps a path to goal",
+    "Be Effective in Role":"generate role-specific prompts that immediately make day-to-day work faster and sharper",
+    "AI UAP Coach":"strengthen account planning with AI-guided coaching and structure",
+    "Pipeline Cleanup":"inspect open deals honestly and decide what to advance, requalify, or close"
+  };
+  const purpose = PURPOSE[cat] || `make progress on ${cat.toLowerCase()} faster`;
+  return `Built for ${roleLbl} working in ${cat.toLowerCase()}. This prompt uses ${toolLbl} to help you ${purpose}. `
+       + `Drop in your account or deal details and it returns a structured, ready-to-use output you can act on right away, `
+       + `so you spend less time staring at a blank page and more time moving the work forward.`;
+}
+function descFor(p){ return (p.description&&p.description.trim()) ? p.description : generateDescription(p); }
+
+/* One-time backfill (v2): any prompt still lacking a description gets the improved auto-version. */
+(function(){
+  if(localStorage.getItem('uscDescBackfill_v2')) return;
+  let changed=false;
+  custom.forEach(p=>{ if(!p.description || !p.description.trim()){ p.description=generateDescription(p); changed=true; } });
+  seed.forEach(base=>{
+    if(deleted.has(base.id)) return;
+    const merged = edits[base.id] ? {...base,...edits[base.id]} : base;
+    if(!merged.description || !merged.description.trim()){
+      edits[base.id] = {...(edits[base.id]||{}), description: generateDescription(merged)};
+      changed=true;
+    }
+  });
+  if(changed){
+    localStorage.setItem('uscCustomPrompts',JSON.stringify(custom));
+    localStorage.setItem('uscEdits',JSON.stringify(edits));
+  }
+  localStorage.setItem('uscDescBackfill_v2','true');
+  localStorage.setItem('uscDescBackfill_v1','true');
+})();
+</script>
+<script>
+class MultiSelect{
+  constructor(mountId,{placeholder,options=[],selected=[],onDone,addNew=null,fsNested=false}){
+    this.el=document.getElementById(mountId);this.placeholder=placeholder;this.onDone=onDone;this.addNew=addNew;this.fsNested=fsNested;
+    this.selected=new Set(selected);this.options=options;this.build();
+  }
+  build(){
+    this.el.innerHTML=`
+      <button type="button" class="ms-btn"><span class="lbl"></span>
+        <span class="right"><span class="cnt" style="display:none;"></span><span class="caret">\u25BE</span></span></button>
+      <div class="ms-panel"><div class="ms-opts"></div>
+        ${this.addNew?`<div class="ms-add"><input type="text" placeholder="${this.addNew.placeholder}"><button type="button">+</button></div>`:''}
+        <div class="ms-foot"><button type="button" class="ms-clear">Clear</button><button type="button" class="ms-done">Done</button></div></div>`;
+    this.btn=this.el.querySelector('.ms-btn');this.panel=this.el.querySelector('.ms-panel');
+    this.lbl=this.el.querySelector('.lbl');this.cnt=this.el.querySelector('.cnt');this.optsBox=this.el.querySelector('.ms-opts');
+    this.renderOpts();
+    this.btn.onclick=e=>{e.stopPropagation();this.toggle();};
+    this.el.querySelector('.ms-done').onclick=e=>{e.stopPropagation();this.close();};
+    this.el.querySelector('.ms-clear').onclick=e=>{e.stopPropagation();this.selected.clear();this.renderOpts();this.updateLabel();this.fire();};
+    this.panel.onclick=e=>e.stopPropagation();
+    if(this.addNew){const inp=this.panel.querySelector('.ms-add input');
+      const addit=()=>{const v=inp.value.trim();if(!v)return;this.addNew.handler(v);inp.value='';};
+      this.panel.querySelector('.ms-add button').onclick=e=>{e.stopPropagation();addit();};
+      inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addit();}};}
+    this.updateLabel();
+  }
+  renderOpts(){
+    const fsOn=this.selected.has('Fast Start');
+    this.optsBox.innerHTML=this.options.filter(o=>{
+      if(this.fsNested && o.fsweek) return fsOn;
+      return true;
+    }).map(o=>`<label class="ms-opt ${o.fsweek?'fsweek':''}"><input type="checkbox" value="${o.value}" ${this.selected.has(o.value)?'checked':''}><span>${o.label}</span></label>`).join('');
+    this.optsBox.querySelectorAll('input').forEach(inp=>inp.onchange=()=>{
+      inp.checked?this.selected.add(inp.value):this.selected.delete(inp.value);
+      if(this.fsNested && !this.selected.has('Fast Start')){ FS_CATS.forEach(c=>this.selected.delete(c)); }
+      if(this.fsNested) this.renderOpts();
+      this.updateLabel(); if(this.onChange)this.onChange([...this.selected]);
+    });
+  }
+  setOptions(options){[...this.selected].forEach(v=>{if(!options.some(o=>o.value===v))this.selected.delete(v);});this.options=options;this.renderOpts();this.updateLabel();}
+  updateLabel(){
+    const sel=this.options.filter(o=>this.selected.has(o.value));
+    if(sel.length===0){this.lbl.innerHTML=`<span class="ph">${this.placeholder}</span>`;this.cnt.style.display='none';return;}
+    this.lbl.innerHTML='';let shown=0;const max=this.lbl.clientWidth||200;
+    for(const o of sel){const t=document.createElement('span');t.className='tag';t.textContent=o.label;this.lbl.appendChild(t);
+      if(this.lbl.scrollWidth>max&&shown>0){this.lbl.removeChild(t);break;}shown++;}
+    if(shown<sel.length){const d=document.createElement('span');d.className='tag';d.textContent='\u2026';this.lbl.appendChild(d);}
+    this.cnt.style.display='inline-block';this.cnt.textContent=sel.length;
+  }
+  toggle(){this.panel.classList.contains('open')?this.close():this.open();}
+  open(){document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'));this.panel.classList.add('open');this.updateLabel();}
+  close(){this.panel.classList.remove('open');this.fire();}
+  fire(){this.onDone&&this.onDone([...this.selected]);}
+  get values(){return [...this.selected];}
+  setValues(arr){this.selected=new Set(arr);this.renderOpts();this.updateLabel();}
+  injectOption(opt){if(!this.options.some(o=>o.value===opt.value))this.options.push(opt);this.selected.add(opt.value);this.renderOpts();this.updateLabel();if(this.onChange)this.onChange([...this.selected]);}
+}
+document.addEventListener('click',()=>{
+  document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'));
+  document.querySelectorAll('.menu-pop.open').forEach(m=>m.classList.remove('open'));
+  document.getElementById('kebabPop').classList.remove('open');
+});
+
+let fCats=[],fTools=[],fRoles=[],fQs=[];
+const grid=document.getElementById('grid'),num=document.getElementById('num'),sEl=document.getElementById('search');
+
+function catFilterOptions(){
+  const base=libraryFilterCats().sort().map(c=>({value:c,label:c}));
+  base.push({value:'Fast Start', label:'\uD83D\uDE80 Fast Start'});
+  FS_WEEKS.forEach(w=>base.push({value:w.cat, label:`Week ${w.num}: ${w.label}`, fsweek:true}));
+  return base;
+}
+const msCat=new MultiSelect('msCat',{placeholder:'All Categories',options:catFilterOptions(),fsNested:true,onDone:v=>{fCats=v;render();}});
+const msTool=new MultiSelect('msTool',{placeholder:'All Tools',options:toolOpts(),onDone:v=>{fTools=v;render();}});
+const msRole=new MultiSelect('msRole',{placeholder:'All Roles',options:roleOpts(),onDone:v=>{fRoles=v;render();}});
+const msQ=new MultiSelect('msQ',{placeholder:'All Quarters',options:[...new Set(allPrompts().map(p=>p.q))].sort().map(q=>({value:q,label:q})),onDone:v=>{fQs=v;render();}});
+
+let msCatForm,msToolForm,msRoleForm;
+function syncFsWeekField(){
+  const fld=document.getElementById('fsWeekField');
+  const hasFastStart=msCatForm.values.includes('Fast Start');
+  fld.classList.toggle('hidden',!hasFastStart);
+}
+function buildFormSelects(){
+  msCatForm=new MultiSelect('msCatForm',{placeholder:'Select category(ies)\u2026',options:libraryFilterCats().concat(['Fast Start']).filter((v,i,a)=>a.indexOf(v)===i).sort().map(c=>({value:c,label:c})),
+    addNew:{placeholder:'+ Add new category\u2026',handler:v=>{msCatForm.injectOption({value:v,label:v});}}});
+  msCatForm.onChange=()=>syncFsWeekField();
+  msToolForm=new MultiSelect('msToolForm',{placeholder:'Select tool(s)\u2026',options:toolOpts(),
+    addNew:{placeholder:'+ Add new tool\u2026',handler:v=>{const val=v.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12)||('t'+Date.now());msToolForm.injectOption({value:val,label:v});}}});
+  msRoleForm=new MultiSelect('msRoleForm',{placeholder:'Select role(s)\u2026',options:roleOpts(),
+    addNew:{placeholder:'+ Add new role\u2026',handler:v=>{const val=v.replace(/[^A-Za-z0-9 ]/g,'').trim().slice(0,16)||('r'+Date.now());msRoleForm.injectOption({value:val,label:v});}}});
+}
+function refreshDynamicOptions(){
+  msCat.setOptions(catFilterOptions());
+  msTool.setOptions(toolOpts());msRole.setOptions(roleOpts());
+  msQ.setOptions([...new Set(allPrompts().map(p=>p.q))].sort().map(q=>({value:q,label:q})));
+}
+
+function buildCard(p){
+  const card=document.createElement('div');card.className='card';
+  card.id='prompt-'+p.id;
+  card.style.setProperty('--barbg',barStyle(p.tools));
+  const badges=p.tools.map(t=>`<span class="toolbadge ${toolClass(t)}"><span class="glyph ${toolClass(t)}">${GLYPH[toolClass(t)]}</span>${toolLabel(t)}</span>`).join('');
+  /* ===== TWEAK: show the real role name + its own unique color ===== */
+  const roleTags=p.roles.map(x=>{
+    const c=colorForRole(x);
+    const cls=(x==='AE'||x==='SE')?x:'role-x';
+    return `<span class="role ${cls}" style="color:${c};border-color:${c};background:${c}26;">${x}</span>`;
+  }).join('');
+  const catTags=p.cats.map(c=>`<span class="cattag ${isFsCat(c)?'fs':''}">${c}</span>`).join('');
+  const dateStr=p.date?new Date(p.date+'T00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+  const isFav=favs.has(p.id);
+  card.innerHTML=`
+    <div class="ctop"><div class="badges">${badges}</div>
+      <div class="ctopright"><div class="roles">${roleTags}</div>
+      <button class="star-btn ${isFav?'on':''}" title="Favorite">\u2605</button></div></div>
+    <div><div class="cats">${catTags}</div><h3 style="margin-top:8px;">${p.title}</h3></div>
+    <div class="meta"><span class="chip">\uD83D\uDCC5 ${dateStr||'\u2014'}</span><span class="chip">\uD83D\uDD50 ${p.q}</span></div>
+   <div class="promptwrap"><div class="prompt-desc"><span class="desc-label">What this does</span><span class="desc-text"></span></div>
+      <button class="menu-btn" title="Options">\u22EF</button>
+      <div class="menu-pop"><button class="edit">\u270F\uFE0F Edit</button><button class="del">\uD83D\uDDD1\uFE0F Delete</button></div></div>
+    <div class="cardfoot">
+      <button class="seewhole">\uD83D\uDCC4 View Prompt</button>
+    </div>`;
+
+  card.querySelector('.desc-text').textContent=descFor(p);
+  card.querySelector('.seewhole').onclick=()=>openPromptPopup(p);
+  card.querySelector('.star-btn').onclick=()=>{favs.has(p.id)?favs.delete(p.id):favs.add(p.id);saveFavs();render();renderFs();};
+  const pop=card.querySelector('.menu-pop');
+  card.querySelector('.menu-btn').onclick=e=>{e.stopPropagation();document.querySelectorAll('.menu-pop.open').forEach(m=>{if(m!==pop)m.classList.remove('open');});pop.classList.toggle('open');};
+  card.querySelector('.edit').onclick=()=>openEdit(p);
+  card.querySelector('.del').onclick=()=>{
+    if(confirm(`Delete \u201c${p.title}\u201d from the library?`)){
+      if(p.id.startsWith('c')||p.id.startsWith('uap')){custom=custom.filter(x=>x.id!==p.id);}else{deleted.add(p.id);delete edits[p.id];}
+      favs.delete(p.id);persist();refreshDynamicOptions();render();renderFs();
+    }};
+  return card;
+}
+
+function matchesCat(p){
+  const selectedWeeks=fCats.filter(c=>isFsCat(c));
+  const selectedRegular=fCats.filter(c=>c!=='Fast Start' && !isFsCat(c));
+  const fsParent=fCats.includes('Fast Start');
+  if(selectedRegular.some(c=>p.cats.includes(c))) return true;
+  if(selectedWeeks.length && selectedWeeks.some(c=>p.cats.includes(c))) return true;
+  if(fsParent && selectedWeeks.length===0 && p.cats.some(c=>isFsCat(c))) return true;
+  return false;
+}
+
+function render(){
+  const s=sEl.value.toLowerCase();grid.innerHTML='';
+  const out=allPrompts().filter(p=>
+    (fCats.length===0||matchesCat(p))&&
+    (fTools.length===0||p.tools.some(t=>fTools.includes(t)))&&
+    (fRoles.length===0||p.roles.some(r=>fRoles.includes(r)))&&
+    (fQs.length===0||fQs.includes(p.q))&&
+    (!favOnly||favs.has(p.id))&&
+    (s===''||(p.title+p.text+p.cats.join(' ')).toLowerCase().includes(s)));
+  num.textContent=out.length;
+  if(!out.length){grid.innerHTML='<div class="empty">\uD83D\uDD0D No prompts match those filters. Try Reset all \u2014 or add a new one with the + button.</div>';return;}
+  out.forEach(p=>grid.appendChild(buildCard(p)));
+}
+
+function renderFs(){
+  const wrap=document.getElementById('fsWeeks');wrap.innerHTML='';
+  FS_WEEKS.forEach(w=>{
+    const prompts=aeFirst(allPrompts().filter(p=>p.cats.includes(w.cat)));
+    const sec=document.createElement('div');sec.className='fs-week';sec.id='fsweek'+w.num;
+    sec.innerHTML=`<div class="fs-weekhead">
+        <span class="fs-wbadge ${w.cls}">WEEK ${w.num}</span>
+        <h3>${w.label}</h3>
+        <span class="ct">${prompts.length} prompt${prompts.length===1?'':'s'}</span>
+      </div>`;
+    const g=document.createElement('div');g.className='fs-weekgrid';
+    if(prompts.length){ prompts.forEach(p=>g.appendChild(buildCard(p))); }
+    else { g.innerHTML='<div class="fs-weekempty">No prompts yet for this week. Use the + button, choose category \u201cFast Start\u201d, then pick this week.</div>'; }
+    sec.appendChild(g);wrap.appendChild(sec);
+  });
+  renderFsJumpBar();
+}
+
+function renderFsJumpBar(){
+  const bar=document.getElementById('fsJumpBar');
+  if(!bar) return;
+  bar.innerHTML=FS_WEEKS.map(w=>
+    `<button class="fs-jump ${w.cls}" data-week="${w.num}">
+       <span class="wk">WEEK ${w.num}</span>${w.label}
+     </button>`).join('');
+  bar.querySelectorAll('.fs-jump').forEach(btn=>{
+    btn.onclick=()=>{
+      const target=document.getElementById('fsweek'+btn.dataset.week);
+      if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+  });
+}
+
+const mainView=document.getElementById('mainView'),fsView=document.getElementById('fsView');
+document.getElementById('fsOpen').onclick=()=>{mainView.style.display='none';fsView.style.display='block';renderFs();window.scrollTo({top:0,behavior:'smooth'});};
+document.getElementById('fsBack').onclick=()=>{fsView.style.display='none';mainView.style.display='block';window.scrollTo({top:0,behavior:'smooth'});};
+
+sEl.addEventListener('input',render);
+document.querySelectorAll('.pill[data-tool]').forEach(p=>p.onclick=()=>{msTool.setValues([p.dataset.tool]);fTools=[p.dataset.tool];render();});
+document.getElementById('resetPill').onclick=()=>{sEl.value='';fCats=[];fTools=[];fRoles=[];fQs=[];
+  msCat.setValues([]);msTool.setValues([]);msRole.setValues([]);msQ.setValues([]);
+  favOnly=false;document.getElementById('favPill').classList.remove('active');render();};
+const favPill=document.getElementById('favPill');
+favPill.onclick=()=>{favOnly=!favOnly;favPill.classList.toggle('active',favOnly);render();};
+
+const kebabBtn=document.getElementById('kebabBtn'),kebabPop=document.getElementById('kebabPop');
+kebabBtn.onclick=e=>{e.stopPropagation();kebabPop.classList.toggle('open');};
+kebabPop.onclick=e=>e.stopPropagation();
+document.getElementById('viewMetrics').onclick=()=>{kebabPop.classList.remove('open');openMetrics();};
+document.getElementById('mxClose').onclick=()=>document.getElementById('mxOverlay').classList.remove('open');
+
+/* ===== Prompt popup — target of the single "View Prompt" button; copy lives here ===== */
+let ppCurrent=null;
+function openPromptPopup(p){
+  ppCurrent=p;
+  document.getElementById('ppTitle').textContent=p.title;
+  document.getElementById('ppBody').textContent=p.text;
+  document.getElementById('ppOverlay').classList.add('open');
+}
+document.getElementById('ppClose').onclick=()=>document.getElementById('ppOverlay').classList.remove('open');
+document.getElementById('ppCopy').onclick=()=>{
+  if(!ppCurrent)return;
+  navigator.clipboard.writeText(ppCurrent.text);recordCopy(ppCurrent);
+  const b=document.getElementById('ppCopy');b.textContent='\u2713 Copied!';b.classList.add('done');
+  setTimeout(()=>{b.innerHTML='\uD83D\uDCCB Copy Prompt';b.classList.remove('done');},1500);
+};
+
+async function openMetrics(){
+  const banner=document.getElementById('mxBanner'),bText=document.getElementById('mxBannerText');
+  const perVisitEl=document.getElementById('mxPerVisit'),activeEl=document.getElementById('mxActive'),
+        allTimeEl=document.getElementById('mxAllTime'),lb=document.getElementById('mxLeaderboard'),
+        topV=document.getElementById('mxTopViewers'),vBody=document.getElementById('mxViewerBody');
+  document.getElementById('mxOverlay').classList.add('open');
+  activeEl.textContent=allPrompts().length;
+  let m=null;
+  try{ m=await fetchMetrics(); }catch(e){ m=null; }
+  if(m && m.connected){
+    banner.classList.add('live');
+    bText.innerHTML='\u2713 Live data \u2014 connected to approved Cisco analytics source (company-wide aggregate).';
+    perVisitEl.textContent=(m.perVisit!=null?m.perVisit:0);
+    allTimeEl.textContent=(m.allTimeCopies!=null?Number(m.allTimeCopies).toLocaleString():0);
+    const top=(m.topPrompts||[]).slice(0,5);
+    lb.innerHTML=top.length
+      ? top.map((x,i)=>`<div class="mx-lead"><span class="mx-rank">${i+1}</span><span class="t">${x.title}</span><span class="c">${Number(x.count).toLocaleString()}\u00D7</span></div>`).join('')
+      : '<div class="mx-emptyrow">No copy activity recorded for this period.</div>';
+    const tv=(m.topViewers||[]).slice(0,5);
+    topV.innerHTML=tv.length
+      ? tv.map((v,i)=>`<tr><td class="rankcell"><span class="mx-rank-sm">${i+1}</span></td><td>${v.fullName||''}</td><td class="email">${v.email||''}</td><td class="num">${Number(v.copies||0).toLocaleString()}</td></tr>`).join('')
+      : '<tr><td colspan="4" class="mx-emptyrow">No viewer data returned for this period.</td></tr>';
+    const vs=m.viewers||[];
+    vBody.innerHTML=vs.length
+      ? vs.map(v=>`<tr><td>${v.fullName||''}</td><td class="email">${v.email||''}</td><td>${v.timeSpent||''}</td></tr>`).join('')
+      : '<tr><td colspan="3" class="mx-emptyrow">No viewer data returned for this period.</td></tr>';
+  } else {
+    banner.classList.remove('live');
+    bText.innerHTML='\u26A0\uFE0F Sample data \u2014 copy totals shown are from this device only, and viewer identity sections are empty until connected. Wire <code>fetchMetrics()</code> to your approved Cisco analytics endpoint for company-wide data.';
+    perVisitEl.textContent=visitCopies;
+    allTimeEl.textContent=allTimeCopies.toLocaleString();
+    const ranked=Object.entries(copyCounts).map(([id,c])=>({p:allPrompts().find(x=>x.id===id),c}))
+      .filter(x=>x.p).sort((a,b)=>b.c-a.c).slice(0,5);
+    lb.innerHTML=ranked.length
+      ? ranked.map((x,i)=>`<div class="mx-lead"><span class="mx-rank">${i+1}</span><span class="t">${x.p.title}</span><span class="c">${x.c}\u00D7</span></div>`).join('')
+      : '<div class="mx-emptyrow">No prompts copied yet on this device \u2014 copy a prompt to start the leaderboard.</div>';
+    topV.innerHTML='<tr><td colspan="4" class="mx-emptyrow">No viewer data available from the source yet.</td></tr>';
+    vBody.innerHTML='<tr><td colspan="3" class="mx-emptyrow">No viewer data available from the source yet.</td></tr>';
+  }
+}
+
+const overlay=document.getElementById('overlay'),fab=document.getElementById('fab'),fabhint=document.getElementById('fabhint');
+function resetForm(){
+  document.getElementById('mTitle').value='';document.getElementById('mText').value='';
+  document.getElementById('mDesc').value='';
+  document.getElementById('mQ').value='Q1 FY27';document.getElementById('mDate').value='';
+  document.getElementById('mFsWeek').value='';
+  document.getElementById('mErr').style.display='none';buildFormSelects();syncFsWeekField();
+}
+function openAdd(){editingId=null;resetForm();
+  document.getElementById('modalTitle').innerHTML='\u2795 Add a New Prompt';
+  document.getElementById('modalSub').textContent='It will instantly appear in the library and work with every filter.';
+  document.getElementById('saveBtn').textContent='Save Prompt';
+  overlay.classList.add('open');fabhint.style.display='none';}
+function openEdit(p){editingId=p.id;resetForm();
+  document.getElementById('modalTitle').innerHTML='\u270F\uFE0F Edit Prompt';
+  document.getElementById('modalSub').textContent='Update the details below and save your changes.';
+  document.getElementById('saveBtn').textContent='Save Changes';
+  document.getElementById('mTitle').value=p.title;document.getElementById('mText').value=p.text;
+  document.getElementById('mDesc').value=p.description||'';
+  document.getElementById('mQ').value=p.q;document.getElementById('mDate').value=p.date||'';
+  p.tools.forEach(t=>{if(!msToolForm.options.some(o=>o.value===t))msToolForm.options.push({value:t,label:toolLabel(t)});});
+  p.roles.forEach(r=>{if(!msRoleForm.options.some(o=>o.value===r))msRoleForm.options.push({value:r,label:roleLabel(r)});});
+  const fsCat=p.cats.find(c=>isFsCat(c));
+  const nonFs=p.cats.filter(c=>!isFsCat(c));
+  const catVals=nonFs.slice();
+  nonFs.forEach(c=>{if(!msCatForm.options.some(o=>o.value===c))msCatForm.options.push({value:c,label:c});});
+  if(fsCat) catVals.push('Fast Start');
+  msToolForm.setValues(p.tools);msRoleForm.setValues(p.roles);msCatForm.setValues(catVals);
+  document.getElementById('mFsWeek').value=fsCat?String(weekByCat(fsCat).num):'';
+  syncFsWeekField();
+  overlay.classList.add('open');}
+fab.onclick=openAdd;
+document.getElementById('cancelBtn').onclick=()=>overlay.classList.remove('open');
+setTimeout(()=>fabhint.style.display='none',6000);
+
+document.getElementById('saveBtn').onclick=()=>{
+  const title=document.getElementById('mTitle').value.trim();
+  const text=document.getElementById('mText').value.trim();
+  const descInput=document.getElementById('mDesc').value.trim();
+  let cats=msCatForm.values.slice();
+  const tools=msToolForm.values,roles=msRoleForm.values;
+  const fsWeekNum=document.getElementById('mFsWeek').value;
+
+  if(cats.includes('Fast Start')){
+    if(!fsWeekNum){document.getElementById('mErr').style.display='block';return;}
+    cats=cats.filter(c=>c!=='Fast Start');
+    cats=cats.filter(c=>!isFsCat(c));
+    cats.push(weekByNum(fsWeekNum).cat);
+  } else {
+    cats=cats.filter(c=>!isFsCat(c));
+  }
+
+  if(!title||!text||cats.length===0||tools.length===0||roles.length===0){document.getElementById('mErr').style.display='block';return;}
+  cats.forEach(c=>{if(!allCats().includes(c) && !isFsCat(c))extraCats.push(c);});
+  tools.forEach(t=>{if(!toolOpts().some(o=>o.value===t)){const opt=msToolForm.options.find(o=>o.value===t);extraTools.push({value:t,label:opt?opt.label:t});}});
+  roles.forEach(r=>{if(!roleOpts().some(o=>o.value===r)){const opt=msRoleForm.options.find(o=>o.value===r);extraRoles.push({value:r,label:opt?opt.label:r});}});
+
+  const data={tools,cats,roles,q:document.getElementById('mQ').value.trim()||'Unassigned',date:document.getElementById('mDate').value||'',title,text};
+  data.description = descInput ? descInput : generateDescription(data);
+
+  if(editingId){if(editingId.startsWith('c')||editingId.startsWith('uap')){const i=custom.findIndex(x=>x.id===editingId);custom[i]={...custom[i],...data};}else{edits[editingId]={...(edits[editingId]||{}),...data};}}
+  else{custom.unshift({id:'c'+Date.now(),...data});}
+  persist();refreshDynamicOptions();render();renderFs();overlay.classList.remove('open');
+};
+
+buildFormSelects();render();renderFs();
+/* ===== Deep-link handler — retries until cards exist (fixes timing fall-through) ===== */
+(function(){
+  const ROLE_HASH = {
+    'ae':['AE'], 'se':['SE'], 'seller':['AE','SE'], 'leader':['Leader']
+  };
+
+  function glow(el){
+    el.style.transition='box-shadow .4s ease, transform .4s ease';
+    el.style.boxShadow='0 0 0 3px #00bceb, 0 14px 40px rgba(0,188,235,.45)';
+    el.style.transform='translateY(-4px)';
+    setTimeout(()=>{ el.style.boxShadow=''; el.style.transform=''; }, 2600);
+  }
+
+  // Keep trying to find target elements for up to ~2 seconds, then run the action.
+  function whenReady(findFn, actionFn, fallbackFn){
+    let tries = 0;
+    (function attempt(){
+      const result = findFn();
+      const ready = Array.isArray(result) ? result.length > 0 : !!result;
+      if(ready){ actionFn(result); return; }
+      if(tries++ < 40){ setTimeout(attempt, 50); return; } // 40 × 50ms = 2s max
+      if(fallbackFn) fallbackFn();
+    })();
+  }
+
+  function goToHash(){
+    const hash = window.location.hash;
+    if(!hash) return;
+
+    const promptMatch   = hash.match(/^#prompt-(.+)$/);
+    const roleWeekMatch = hash.match(/^#fsweek([1-4])-([a-z]+)$/);
+    const weekMatch     = hash.match(/^#fsweek([1-4])$/);
+
+    if(promptMatch || roleWeekMatch || weekMatch){
+      mainView.style.display='none';
+      fsView.style.display='block';
+      renderFs();
+
+      // 1) Specific prompt id
+      if(promptMatch){
+        whenReady(
+          ()=>document.getElementById('prompt-'+promptMatch[1]),
+          (t)=>{ t.scrollIntoView({behavior:'smooth',block:'center'}); glow(t); }
+        );
+        return;
+      }
+
+      // 2) Week + role: highlight EVERY matching role card in that week
+      if(roleWeekMatch){
+        const weekNum     = Number(roleWeekMatch[1]);
+        const roleKey     = roleWeekMatch[2];
+        const wantedRoles = ROLE_HASH[roleKey];
+        const weekCat     = weekByNum(weekNum).cat;
+
+        if(wantedRoles){
+          whenReady(
+            ()=>{
+              const matches = allPrompts().filter(p=>
+                p.cats.includes(weekCat) && p.roles.some(r=>wantedRoles.includes(r))
+              );
+              return matches
+                .map(p=>document.getElementById('prompt-'+p.id))
+                .filter(Boolean);
+            },
+            (cards)=>{
+              cards[0].scrollIntoView({behavior:'smooth',block:'center'});
+              cards.forEach(glow);
+            },
+            ()=>{ // fallback: scroll to the week if no cards ever appear
+              const ws=document.getElementById('fsweek'+weekNum);
+              if(ws) ws.scrollIntoView({behavior:'smooth',block:'start'});
+            }
+          );
+          return;
+        }
+      }
+
+      // 3) Plain week
+      if(weekMatch){
+        whenReady(
+          ()=>document.getElementById('fsweek'+weekMatch[1]),
+          (t)=>t.scrollIntoView({behavior:'smooth',block:'start'})
+        );
+      }
+    }
+  }
+
+  window.addEventListener('load', goToHash);
+  window.addEventListener('hashchange', goToHash);
+})();
+</script>
+</body>
+</html>
